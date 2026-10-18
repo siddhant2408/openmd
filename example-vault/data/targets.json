@@ -1,0 +1,8 @@
+{
+  "monthly": { "jan": 150000, "feb": 200000, "mar": 140000 },
+  "regional": {
+    "jan": { "north": 40000, "south": 35000, "east": 35000, "west": 40000 },
+    "feb": { "north": 50000, "south": 50000, "east": 50000, "west": 50000 },
+    "mar": { "north": 50000, "south": 30000, "east": 30000, "west": 30000 }
+  }
+}

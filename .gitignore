@@ -1,0 +1,5 @@
+node_modules/
+dist/
+example-vault/.obsidian/*
+!example-vault/.obsidian/community-plugins.json
+.DS_Store
