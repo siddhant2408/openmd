@@ -93,7 +93,7 @@ ln -s "$PWD/packages/cli/skill/writing-openui-notes" ~/.claude/skills/writing-op
 | `packages/cli` (`openmd`) | The command-line tool and live viewer: `cli.ts`, `serve.ts` (notes, data files, change events), `viewer/` (the page), `skill/` |
 | `packages/obsidian` (`@openmd/obsidian`) | The Obsidian plugin: block processor, per-note runtime, the vault `file` tool, Obsidian theme mapping |
 
-- `npm run check` parses the example notes and the skill's example against the real library, then type-checks.
+- `npm run check` parses the example notes and the skill's example against the real library, then type-checks. CI (`.github/workflows/ci.yml`) runs it on every PR and push to `main`, along with the build, `openmd check` on the example notes, and `npm audit` for high-severity issues.
 - `npm run build` builds the plugin into `packages/obsidian/dist` and the CLI into `packages/cli/dist`.
 
 ## Limits
