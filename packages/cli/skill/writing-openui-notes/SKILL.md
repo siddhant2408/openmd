@@ -1,61 +1,64 @@
 ---
 name: writing-openui-notes
-description: Use when creating or editing a Markdown note that uses ```openui blocks (openmd, or its Obsidian plugin), when building an interactive figure, explainer, animation, calculator or dashboard in a note, or when turning an HTML page or slashdocs document into a note.
+description: Write interactive Markdown notes (openmd, or Obsidian with the openmd plugin) whose figures animate, respond to sliders and buttons, and share state, using ```openui blocks. Use it when someone asks to explain how something works interactively, wants a visual or animated explainer, an interactive note, a calculator, a what-if explorer or a dashboard from data in Markdown or Obsidian, or wants an HTML page or slashdocs document turned into a note, even if they don't name openmd. For a standalone hand-drawn isometric object page use colorfigures instead; for a published HTML document use slashdocs.
+license: MIT
+compatibility: Node.js 18+ for the openmd CLI (npx openmd). Any agent that can write files; checking needs a shell.
 ---
 
 # Writing OpenUI notes
 
-openmd renders each ` ```openui ` block in a Markdown note as live UI: in its own live viewer (`openmd preview`) and in Obsidian through the openmd plugin. **All blocks in a note are one program**: names and `$state` are shared across blocks. A note holds only Markdown and ` ```openui ` blocks, never HTML. If something can't be expressed, add a generic component or function to `@openmd/core` (`packages/core/src/figures.tsx` in the openmd repo) and use it by name.
+An openmd note is a plain Markdown file. Each ` ```openui ` block in it renders as live UI: drawings, charts, sliders, buttons, animations. All of a note's blocks are **one program**, so a slider in one figure can drive a chart three sections later. It renders in the live viewer (`openmd preview`) and in Obsidian through the openmd plugin.
+
+A note holds only Markdown and ` ```openui ` blocks, **never HTML**. If something can't be expressed, the fix is a new generic component or function in `@openmd/core`, not markup in the note.
+
+Read as needed:
+- `references/planning.md`: from a topic, a document or data to an outline; figure types; "follow the real process".
+- `references/figures.md`: drawings, `Plot` charts, geometry, `Player` motion, readouts and captions.
+- `references/data.md`: notes built on CSV or JSON: filters, totals, tables.
+- `references/converting.md`: turning an HTML page or slashdocs document into a note.
+- `references/style.md`: paint words, taste, wording, accessibility.
+- `references/language.md`: the language's rules and its traps.
+
+## Inputs: three cases
+
+**A topic** ("explain how tides work"): research the real mechanism and numbers, then find the two to four ideas a reader must get, in order.
+
+**A document** (HTML, slashdocs, PDF, notes): inventory its sections, figures, controls, animations and numbers; port them faithfully (`references/converting.md`).
+
+**Data** (CSV, JSON, a pasted table): decide the questions a reader will ask of it; one view per question (`references/data.md`).
 
 ## Workflow
 
-Run `openmd` with `npx openmd …`, or install it once with `npm i -g openmd`.
+1. **Outline first.** A few lines per section: the one idea each figure shows, what moves and in what real order, the `$state` that drives it, and what the reader does. Show it to the person if the scope or the topic is unclear (`references/planning.md`).
+2. **Start from a template.** Copy the closest one from `templates/` and replace its content. Don't start from a blank note.
+   - `explainer.md`: an animated figure with a Player, a chart in a `Plot`, one slider shared by two figures.
+   - `dashboard.md`: data, a shared filter, headline numbers, a chart and a table.
+   - `calculator.md`: inputs, computed results, a chart that follows them.
+   - For a large worked example, see **How GPS knows where you are** in the openmd example vault.
+3. **Write the blocks.** Run `openmd reference` (or `openmd reference <word>`) for exact signatures; arguments are positional.
+4. **Check:** `openmd check note.md` must report no problems. Fix everything it lists.
+5. **Look at it**, in at most two rounds of look → fix:
+   - `openmd preview <folder or note>` opens a live viewer that updates on every save;
+   - look at each figure in its starting state, play its main sequence once, and drag each slider to both ends;
+   - check every figure against its outline: right sequence, right numbers, nothing overlapping or unreadable;
+   - without a browser, say that the figures were checked by `openmd check` only.
+6. **Hand over:** the note's path, one line per figure on what its controls do, and what you didn't verify.
 
-1. `openmd reference` lists every component and function with its exact positional signature, and `openmd reference svg` filters. Read it before writing. Arguments are positional, so don't guess the order.
-2. Write the blocks.
-3. `openmd check "path/to/note.md"` parses the note against the real library. It reports type mismatches, unknown names and names defined twice, and exits 1 on any problem. Fix everything it reports.
-4. `openmd preview "path/to/folder-or-note"` opens a live viewer that updates on every save. Try every Player, slider and button. Parsing can't show whether animations run.
+## Rules
 
-## The language in brief
+- **Follow the real process.** For anything that moves, write the real sequence first. Each control or animation stage is one real step, in order; nothing appears where it couldn't get to.
+- **True numbers.** Real values with units, from sources you name in the note. Mark estimates as estimates.
+- **One idea per figure, and every figure does something.** If a figure only sits there, it should be a sentence or a table instead.
+- **The figure starts in a state worth seeing.** Autoplay a mechanism when it scrolls into view, or open on its most telling state.
+- **Captions say what to try and what to notice.** Readouts are sentences with bold numbers, not bare values.
+- **Neat over busy:** about 8–18 repeated lines, 6 labels or fewer per figure, one accent colour for what matters now.
+- **Prose explains; figures show.** Long explanations go in the Markdown, not inside drawings.
+- **Defaults give way.** If the person asks for a style, length, audience or number of figures, that wins over these rules.
 
-- A block shows its `root`. A block without `root` only defines data and state.
-- Each name may be defined in one block only.
-- `$x = 0` declares state. Bind it as a component's value argument, as in `Scrubber("x", 0, 10, 1, $x)`, and change it with `Action([@Set($x, 5)])`.
-- Expressions support `+ - * / %`, comparisons, `&& || !`, `a ? b : c`, `a.b` and `a[i]`. `"text" + 3` joins as text.
-- There are no user-defined functions, so keep formulas from repeating:
-  - Name a value once and reuse it, as in `dA = @Distance(satA, you)`.
-  - Draw charts inside `Plot([xMin, xMax], [yMin, yMax], [left, top, width, height], [...])`, so shapes take data values instead of pixel formulas.
-  - Use `@Intersect`, `@Distance` and `@Polar` for geometry.
-  - When a formula would repeat inside `@Each`, compute a list of objects once (`curve = @Each(@Seq(0, 10, 1), "k", {x: k, y: k * k})`) and draw from it (`Polyline(curve)`).
-- `@Each(list, "v", template)` maps a list. Use `v` only inside the template.
+## Files
 
-## Traps
-
-| Symptom | Fix |
-| --- | --- |
-| `expects Point but got plain object` | Literal data handed to a component must be built with it, e.g. `Point(x, y)` not `{x: x, y: y}`. Plain objects are fine for data you only filter or sort. |
-| A slider doesn't move when a Player or button changes its variable | Use `Scrubber`. The built-in `Slider` ignores outside changes and binds arrays (`$v = [0]`, read `$v[0]`). |
-| Circles render as ellipses, axes jump as data changes | Charts autoscale. Draw with `Svg` shapes instead. |
-| Every shape in a chart needs a pixel formula | Wrap them in a `Plot`. Its children use data values; nudge labels with `SvgText`'s `dx`/`dy`. |
-| Need motion over time | `Player(name, $var, to, ms, label?, pauseLabel?, autoplay?, loop?, ease?)`. Without a label it is invisible, which suits a looping effect. |
-| A new library name collides | Component, function and built-in names share one namespace. For example, `Label` already exists, so SVG text is `SvgText`. |
-| A new colour or line style is needed | `paint` words are classes in `@openmd/core`'s `styles.css` (`"ring s1"` becomes `.omd-ring .omd-s1`). Add a token there with light and dark values. |
-
-## Example
-
-```openui
-$grow = 0
-radius = $grow / 100 * 80
-root = Figure("FIG 1", "A growing circle", [
-  Svg("0 0 400 200", [
-    Circle(200, 95, radius, "ring s1"),
-    SvgText(200, 192, @Fixed(radius, 0) + " px", "t-muted", "middle")
-  ]),
-  Controls([
-    Player("grow", $grow, 100, 3000, "▶ Play", "❚❚ Pause", true),
-    Scrubber("grow", 0, 100, 1, $grow, "size")
-  ])
-], "Captions accept **bold** and *italic*.")
-```
-
-For a full worked example, see `example-vault/How GPS knows where you are.md`.
+| Path | What |
+|---|---|
+| `templates/explainer.md`, `dashboard.md`, `calculator.md` | Working notes to copy and adapt. `openmd check` passes on all three. |
+| `references/*.md` | The detail behind each workflow step, read when needed. |
+| `openmd reference`, `check`, `preview` | Signatures, problems, the live viewer. Run with `npx openmd …`, or install once with `npm i -g openmd`. |

@@ -79,7 +79,7 @@ Open `example-vault/` in Obsidian (**Open folder as vault**), trust it, and open
 
 ## Skill for coding agents
 
-`packages/cli/skill/writing-openui-notes/SKILL.md` teaches an agent the workflow and the language's traps. `openmd install-skill` copies it into `~/.claude/skills`; `--dir` picks another folder. To track this repo instead:
+`packages/cli/skill/writing-openui-notes/` teaches an agent to write good interactive notes: `SKILL.md` (inputs, an outline-first workflow, rules, hand-over), `references/` (planning, figures, data, converting, style, language) and `templates/` (explainer, dashboard, calculator) to start from. `openmd install-skill` copies it into `~/.claude/skills`; `--dir` picks another folder. To track this repo instead:
 
 ```bash
 ln -s "$PWD/packages/cli/skill/writing-openui-notes" ~/.claude/skills/writing-openui-notes
@@ -93,7 +93,7 @@ ln -s "$PWD/packages/cli/skill/writing-openui-notes" ~/.claude/skills/writing-op
 | `packages/cli` (`openmd`) | The command-line tool and live viewer: `cli.ts`, `serve.ts` (notes, data files, change events), `viewer/` (the page), `skill/` |
 | `packages/obsidian` (`@openmd/obsidian`) | The Obsidian plugin: block processor, per-note runtime, the vault `file` tool, Obsidian theme mapping |
 
-- `npm run check` parses the example notes and the skill's example against the real library, then type-checks. CI (`.github/workflows/ci.yml`) runs it on every PR and push to `main`, along with the build, `openmd check` on the example notes, and `npm audit` for high-severity issues.
+- `npm run check` parses the example notes and the skill's templates against the real library, then type-checks. CI (`.github/workflows/ci.yml`) runs it on every PR and push to `main`, along with the build, `openmd check` on the example notes and templates, and `npm audit` for high-severity issues.
 - `npm run build` builds the plugin into `packages/obsidian/dist` and the CLI into `packages/cli/dist`.
 
 ## Limits

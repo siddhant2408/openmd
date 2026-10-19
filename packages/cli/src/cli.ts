@@ -52,11 +52,16 @@ switch (command) {
     console.log(referenceText(args[0]));
     break;
   case "prompt": {
-    // The skill without its frontmatter and the steps that need a terminal, then the full reference.
-    const skill = readFileSync(join(skillDir, "SKILL.md"), "utf8")
-      .replace(/^---[\s\S]*?---\s*/, "")
-      .replace(/## Workflow[\s\S]*?(?=\n## )/, "");
-    console.log(`${skill.trim()}\n\n# Every component and function\n\n${referenceText()}`);
+    // For assistants that can't run commands or open files: the skill without its frontmatter, the
+    // references it points to, one template as a worked example, and every signature.
+    const read = (path: string) => readFileSync(join(skillDir, path), "utf8").trim();
+    const parts = [
+      read("SKILL.md").replace(/^---[\s\S]*?---\s*/, ""),
+      ...["planning", "figures", "data", "style", "language"].map((r) => read(`references/${r}.md`)),
+      `# Worked example: templates/explainer.md\n\n${read("templates/explainer.md")}`,
+      `# Every component and function\n\n${referenceText()}`,
+    ];
+    console.log(parts.join("\n\n---\n\n"));
     break;
   }
   case "install-skill": {
