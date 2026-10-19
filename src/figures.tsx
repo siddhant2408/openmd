@@ -371,17 +371,23 @@ const Player = defineComponent({
       if (run.current.raf && !run.current.wrote.has(Number(field.value))) stop();
     }, [field.value]);
 
+    // Watch the whole figure, not the button: the button can sit below the fold while the drawing is
+    // in view. "In view" is 45% of the figure, or 45% of the screen for figures taller than it.
     useEffect(() => {
       if (!props.autoplay || !el.current || !("IntersectionObserver" in window)) return;
+      const target = el.current.closest(".intr-fig") ?? el.current;
       const io = new IntersectionObserver(
         (entries) => {
-          if (!entries.some((e) => e.isIntersecting)) return;
+          const seen = entries.some(
+            (e) => e.isIntersecting && (e.intersectionRatio >= 0.45 || e.intersectionRect.height >= 0.45 * (e.rootBounds?.height ?? Infinity)),
+          );
+          if (!seen) return;
           io.disconnect();
           if (current() === (live.current.props.from ?? 0)) start();
         },
-        { threshold: 0.45 },
+        { threshold: [0, 0.1, 0.2, 0.3, 0.45] },
       );
-      io.observe(el.current);
+      io.observe(target);
       return () => io.disconnect();
     }, [props.autoplay]);
 

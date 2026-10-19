@@ -17,14 +17,14 @@ for (const note of ["Sales review.md", "Q1 store review.md"]) {
   assert.ok("$month" in result.stateDeclarations, note);
 }
 
-// The figures note leans on the drawing, Player and maths additions.
-{
-  const { program, duplicates } = stitch(readFileSync("example-vault/How GPS knows where you are.md", "utf8"));
+// The figures note, the skill's example, and any notes named on the command line
+// (npm run check-note -- "path/to/note.md") must parse cleanly too.
+for (const path of ["example-vault/How GPS knows where you are.md", "skill/writing-openui-notes/SKILL.md", ...process.argv.slice(2)]) {
+  const { program, duplicates } = stitch(readFileSync(path, "utf8"));
   const result = parser.parse(program);
-  assert.deepEqual(duplicates, []);
-  assert.deepEqual(result.meta.errors, []);
-  assert.deepEqual(result.meta.unresolved, []);
-  assert.ok("$bErr" in result.stateDeclarations);
+  assert.deepEqual(duplicates, [], `${path}: names defined in more than one block`);
+  assert.deepEqual(result.meta.errors, [], `${path}: parse errors`);
+  assert.deepEqual(result.meta.unresolved, [], `${path}: unknown names`);
 }
 
 assert.match(stitch(readFileSync("example-vault/Sales review.md", "utf8")).program, /^root = Stack\(\[_s2, _s3, _s4\]\)/); // block 1 is data-only

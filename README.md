@@ -62,12 +62,28 @@ npm run install-vault   # builds into example-vault/.obsidian/plugins/intr
 
 Open `example-vault/` in Obsidian (**Open folder as vault**), trust it, and open **Q1 store review**.
 
+## Writing notes
+
+- `npm run reference` prints every component and function with its exact signature. Add a word to filter: `npm run reference -- svg`.
+- `npm run check-note -- "path/to/note.md"` parses a note against the library and reports errors, unknown names and names defined in two blocks.
+- `npm run preview -- "path/to/note.md"` serves the note's blocks at http://localhost:8765, so animations and controls can be tried in a browser. Add `?theme=dark` for dark mode.
+
+### Skill for coding agents
+
+`skill/writing-openui-notes/SKILL.md` teaches an agent this workflow and the language's traps. To install it for Claude Code:
+
+```bash
+ln -s "$PWD/skill/writing-openui-notes" ~/.claude/skills/writing-openui-notes
+```
+
+`npm run check` parses the skill's example, so it stays valid as the library changes.
+
 ## Develop
 
 - `src/stitch.ts` joins a note's blocks into one program.
 - `src/library.tsx` holds the component library, including `Slot` and the animated components.
 - `src/main.tsx` is the plugin: block processor, per-note runtime, the `file` tool.
-- `npm run check` parses the example notes against the real library and type-checks.
+- `npm run check` parses the example notes and the skill's example against the real library, then type-checks.
 
 ## Limits
 

@@ -4,7 +4,10 @@
   "description": "Interactive OpenUI blocks in Obsidian notes, connected across the whole note.",
   "scripts": {
     "build": "esbuild src/main.tsx --bundle --format=cjs --platform=browser --target=es2022 --minify --external:obsidian --external:electron --define:process.env.NODE_ENV=\\\"production\\\" --outfile=dist/main.js && cat dist/main.css styles.extra.css > dist/styles.css && rm dist/main.css && cp manifest.json dist/",
-    "check": "esbuild stitch.check.ts --bundle --platform=node --format=esm --packages=external --jsx=automatic --outfile=dist/check.mjs --log-level=warning && node dist/check.mjs && tsc",
+    "check": "npm run check-note && tsc",
+    "check-note": "esbuild stitch.check.ts --bundle --platform=node --format=esm --packages=external --jsx=automatic --outfile=dist/check.mjs --log-level=warning && node dist/check.mjs",
+    "reference": "esbuild reference.ts --bundle --platform=node --format=esm --packages=external --jsx=automatic --outfile=dist/reference.mjs --log-level=warning && node dist/reference.mjs",
+    "preview": "node preview/serve.mjs",
     "install-vault": "npm run build && cp dist/main.js dist/styles.css dist/manifest.json example-vault/.obsidian/plugins/intr/"
   },
   "author": "siddhant2408",
