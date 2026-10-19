@@ -12,5 +12,5 @@
     "lib": ["dom", "es2022"],
     "types": ["node"]
   },
-  "include": ["packages/*/src", "check.ts"]
+  "include": ["packages/*/src", "check.ts", "check-regressions.ts"]
 }

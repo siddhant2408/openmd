@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "build": "npm run build -w @openmd/obsidian && npm run build -w openmd",
-    "check": "esbuild check.ts --bundle --platform=node --format=esm --jsx=automatic --loader:.css=empty --outfile=dist/check.mjs --log-level=warning && node dist/check.mjs && tsc",
+    "check": "esbuild check.ts --bundle --platform=node --format=esm --jsx=automatic --loader:.css=empty --outfile=dist/check.mjs --log-level=warning && node dist/check.mjs && npm run check:regressions && tsc",
+    "check:regressions": "esbuild check-regressions.ts --bundle --platform=node --format=esm --banner:js='const __dirname = new URL(\".\", import.meta.url).pathname;' --outfile=dist/check-regressions.mjs --log-level=warning && node --test dist/check-regressions.mjs",
     "install-vault": "npm run install-vault -w @openmd/obsidian",
     "openmd": "node packages/cli/dist/cli.cjs"
   },

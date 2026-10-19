@@ -49,7 +49,8 @@ Writing by hand? Copy a template from `packages/cli/skill/writing-openui-notes/t
 - Each block's `root` is what it shows. A block without `root` shows nothing but can define data and state for the others.
 - Names (`rows`, `$month`, …) are shared across the note, like cells in a spreadsheet. If two blocks define the same name, you get a warning.
 - `Query("file", { path })` reads a CSV or JSON file next to your notes. Nothing leaves your machine.
-- One hidden OpenUI renderer runs per note, and each block's UI is portaled into its place.
+- One hidden OpenUI renderer runs per note, and each block's UI is portaled into its place. Identical blocks retain separate positions.
+- The preview server binds to `127.0.0.1` only. File requests must remain inside the preview folder after resolving symlinks; links to files outside it are rejected. It has no authentication: do not expose it through a network proxy or preview folders writable by untrusted processes.
 
 Besides the [standard OpenUI components](https://www.openui.com/docs), openmd adds:
 
