@@ -17,6 +17,16 @@ for (const note of ["Sales review.md", "Q1 store review.md"]) {
   assert.ok("$month" in result.stateDeclarations, note);
 }
 
+// The figures note leans on the drawing, Player and maths additions.
+{
+  const { program, duplicates } = stitch(readFileSync("example-vault/How GPS knows where you are.md", "utf8"));
+  const result = parser.parse(program);
+  assert.deepEqual(duplicates, []);
+  assert.deepEqual(result.meta.errors, []);
+  assert.deepEqual(result.meta.unresolved, []);
+  assert.ok("$bErr" in result.stateDeclarations);
+}
+
 assert.match(stitch(readFileSync("example-vault/Sales review.md", "utf8")).program, /^root = Stack\(\[_s2, _s3, _s4\]\)/); // block 1 is data-only
 assert.equal(blockId("x = 1\n"), blockId("x = 1")); // Obsidian hands the processor the body without its trailing newline
 assert.deepEqual(stitch("```openui\nx = 1\n```\n```openui\nx = 2\n```").duplicates, ["x"]);

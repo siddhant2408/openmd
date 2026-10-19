@@ -39,6 +39,18 @@ Besides the [standard OpenUI components](https://www.openui.com/docs), the plugi
 | `Progress(value, max, label?)` | A bar that fills toward `max`; green at 100%, amber from 80%, red below |
 | `Reveal([children], "fade" \| "slide" \| "scale", delayMs?)` | Animates its children in when they appear |
 
+For figures there is a small drawing kit:
+
+| Component | What it does |
+| --- | --- |
+| `Svg(viewBox, [children])` | A drawing. Children: `Circle`, `Ellipse`, `Line`, `Path`, `Polygon`, `Polyline`, `Rect`, `SvgText`, `Span`, `Group`, `Glyph("satellite" \| "pin" \| "phone", …)`. Every coordinate can be an expression; `paint` picks a style token (see `styles.extra.css`) |
+| `Player(name, $var, to, ms, label?, pauseLabel?, autoplay?, loop?, ease?)` | Moves `$var` towards `to` over time: Play/Pause buttons, autoplay on scroll, looping, or an eased jump (`"out"`). Invisible without a label. Gives way when anything else changes `$var` |
+| `Scrubber(name, min, max, step, $var, label?)`, `Check(name, label, $var)` | A slider and a checkbox that follow `$var` while a Player moves it |
+| `Btn(label, Action([...]), variant?)` | A plain button |
+| `Figure(tag, title, [children], caption?)`, `Controls`, `Readout`, `Grid`, `Tile` | Layout for figures; captions and readouts accept `**bold**` and `*italic*` |
+
+And functions: `@Sin`, `@Cos`, `@Sqrt`, `@Log10`, `@Pow`, `@Precision`, `@Fixed`, `@Pad`, `@Locale`, `@Join`, `@Seq`. **How GPS knows where you are** in the example vault is built from these alone.
+
 Animations are off when the OS "reduce motion" setting is on.
 
 ## Try it

@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { z } from "zod/v4";
 import { defineComponent } from "@openuidev/react-lang";
 import { openuiLibrary } from "@openuidev/react-ui/genui-lib";
+import { figureComponents, functions } from "./figures";
 
 // What a Slot needs from the note it belongs to: where each block's element is, and when that changes.
 export interface SlotTargets {
@@ -120,6 +121,8 @@ export const library = openuiLibrary.extend({
       { component: CountUp, slots: inCards },
       { component: Progress, slots: inCards },
       { component: Reveal, slots: inCards },
+      ...figureComponents,
     ],
   },
+  functions: { add: functions },
 });
