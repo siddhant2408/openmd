@@ -1,7 +1,7 @@
 // The live viewer's server: lists the notes under a folder (or one note), serves them and the files
 // their Query("file", …) blocks read, and tells open pages when anything changes.
 import { spawn } from "node:child_process";
-import { readdirSync, readFileSync, statSync, watch } from "node:fs";
+import { readdirSync, readFileSync, realpathSync, statSync, watch } from "node:fs";
 import { createServer, type ServerResponse } from "node:http";
 import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
 
@@ -19,7 +19,7 @@ export function serve(target: string, port: number, open: boolean) {
     process.exit(1);
   }
   const single = stat.isFile();
-  const root = single ? dirname(full) : full;
+  const root = realpathSync(single ? dirname(full) : full);
 
   // ponytail: rescans the folder on every request; cache it if folders get huge.
   const notes = (): string[] => {
@@ -41,7 +41,9 @@ export function serve(target: string, port: number, open: boolean) {
   // Only files inside the folder being previewed can be read.
   const inside = (path: string) => {
     const p = resolve(root, path);
-    return p === root || p.startsWith(root + sep) ? p : null;
+    if (p !== root && !p.startsWith(root + sep)) return null;
+    const real = realpathSync(p);
+    return real === root || real.startsWith(root + sep) ? real : null;
   };
 
   const assets = join(__dirname);
@@ -85,21 +87,25 @@ export function serve(target: string, port: number, open: boolean) {
   });
 
   // One event per changed file; the page refetches what it shows.
-  watch(root, { recursive: true }, (_event, file) => {
+  const watcher = watch(root, { recursive: true }, (_event, file) => {
     if (!file || file.split(sep).some((part) => part.startsWith(".") || SKIP.has(part))) return;
     const data = `data: ${JSON.stringify(file.split(sep).join("/"))}\n\n`;
     for (const res of pages) res.write(data);
   });
 
   server.on("error", (error: NodeJS.ErrnoException) => {
-    if (error.code === "EADDRINUSE") return server.listen(++port);
+    if (error.code === "EADDRINUSE") return server.listen(++port, "127.0.0.1");
     throw error;
   });
-  server.listen(port, () => {
-    const url = `http://localhost:${port}/`;
+  server.listen(port, "127.0.0.1", () => {
+    const address = server.address();
+    const actualPort = address && typeof address !== "string" ? address.port : port;
+    const url = `http://127.0.0.1:${actualPort}/`;
     console.log(`openmd is previewing ${single ? full : `${root} (${notes().length} notes)`}\n${url}\nPress Ctrl+C to stop.`);
     if (open) spawn(process.platform === "darwin" ? "open" : process.platform === "win32" ? "explorer" : "xdg-open", [url], { stdio: "ignore", detached: true }).unref();
   });
+  server.on("close", () => watcher.close());
+  return server;
 }
 
 const page = (title: string) => `<!doctype html>

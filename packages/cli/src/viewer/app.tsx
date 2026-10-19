@@ -15,7 +15,7 @@ const markdown = new MarkdownIt({ html: false, linkify: true });
 const fence = markdown.renderer.rules.fence!;
 markdown.renderer.rules.fence = (tokens, idx, options, env, self) =>
   tokens[idx].info.trim().split(/\s+/)[0] === "openui"
-    ? `<div class="omd-block" data-omd-block="${blockId(tokens[idx].content)}"></div>`
+    ? `<div class="omd-block" data-omd-block="${blockId(tokens[idx].content, tokens[idx].map?.[0] ?? 0)}"></div>`
     : fence(tokens, idx, options, env, self);
 
 const api = (path: string, kind: "note" | "file") => `/api/${kind}?path=${encodeURIComponent(path)}`;

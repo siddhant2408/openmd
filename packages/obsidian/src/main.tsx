@@ -79,13 +79,14 @@ export default class OpenmdPlugin extends Plugin {
   async onload() {
     this.registerMarkdownCodeBlockProcessor("openui", (source, el, ctx) => {
       const runtime = this.runtime(ctx.sourcePath);
-      const text = ctx.getSectionInfo(el)?.text;
+      const section = ctx.getSectionInfo(el);
+      const text = section?.text;
       if (text) runtime.setText(text);
 
       const clashes = statementNames(source).filter((name) => runtime.duplicates.includes(name));
       if (clashes.length) el.createDiv({ cls: "omd-warning", text: `Also defined in another block: ${clashes.join(", ")}` });
 
-      const id = blockId(source);
+      const id = blockId(source, section?.lineStart ?? 0);
       const target = el.createDiv({ cls: "omd-block" });
       runtime.attach(id, target);
       const child = new MarkdownRenderChild(target);
