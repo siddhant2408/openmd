@@ -1,0 +1,3 @@
+/* Obsidian only: match the vault's fonts, and warn about names defined in two blocks. */
+.omd-block { --omd-font-ui: var(--font-interface); --omd-font-mono: var(--font-monospace); }
+.omd-warning { color: var(--text-error); font-size: var(--font-ui-small); margin-bottom: 4px; }

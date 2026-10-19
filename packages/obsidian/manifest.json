@@ -1,0 +1,9 @@
+{
+  "id": "openmd",
+  "name": "openmd",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.7",
+  "description": "Renders ```openui blocks as live UI: charts, controls, animated figures. All blocks in a note share state and data.",
+  "author": "siddhant2408",
+  "isDesktopOnly": false
+}

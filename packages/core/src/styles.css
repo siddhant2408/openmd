@@ -1,0 +1,126 @@
+.omd-countup { font-variant-numeric: tabular-nums; font-weight: 700; line-height: 1.2; }
+.omd-countup-small { font-size: 1em; }
+.omd-countup-medium { font-size: 1.4em; }
+.omd-countup-large { font-size: 1.9em; }
+
+.omd-progress { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+.omd-progress-row { display: flex; justify-content: space-between; font-size: .85em; color: var(--omd-muted); font-variant-numeric: tabular-nums; }
+.omd-progress-track { height: 8px; border-radius: 4px; background: var(--omd-line); overflow: hidden; }
+.omd-progress-fill { height: 100%; border-radius: 4px; }
+.omd-progress-good { background: var(--omd-ok); }
+.omd-progress-close { background: var(--omd-amber); }
+.omd-progress-behind { background: var(--omd-warn); }
+
+.omd-reveal { animation: 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.omd-reveal-fade { animation-name: omd-fade; }
+.omd-reveal-slide { animation-name: omd-slide; }
+.omd-reveal-scale { animation-name: omd-scale; }
+@keyframes omd-fade { from { opacity: 0; } }
+@keyframes omd-slide { from { opacity: 0; transform: translateY(12px); } }
+@keyframes omd-scale { from { opacity: 0; transform: scale(0.96); } }
+@media (prefers-reduced-motion: reduce) { .omd-reveal { animation: none; } }
+
+/* ── Theme: hosts can override any --omd-* variable; an ancestor with .theme-dark switches to dark. ── */
+.omd-block {
+  --omd-font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; --omd-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --omd-amber: #c98a12;
+  --omd-panel: #ffffff; --omd-bg: #fbfaf7; --omd-ink: #1a1d23; --omd-muted: #5b6270; --omd-line: #dedad2; --omd-grid: #eeebe4;
+  --omd-accent: #d4572a; --omd-accent-soft: rgba(212, 87, 42, .14); --omd-ok: #1f8a5b; --omd-warn: #c2412d;
+  --omd-s1: #2f6fd6; --omd-s2: #8a4fd1; --omd-s3: #0f8f84;
+  --omd-map-land: #f1eee6; --omd-map-road: #ffffff; --omd-map-road-minor: #e4e0d6; --omd-map-water: #b9d4ea; --omd-map-park: #cfe5c7;
+}
+.theme-dark .omd-block {
+  --omd-amber: #e0a43a;
+  --omd-panel: #161a21; --omd-bg: #0f1115; --omd-ink: #e6e8ec; --omd-muted: #9aa3b2; --omd-line: #2a2f38; --omd-grid: #1e232c;
+  --omd-accent: #ff8a5c; --omd-accent-soft: rgba(255, 138, 92, .16); --omd-ok: #4cc38a; --omd-warn: #ff6b57;
+  --omd-s1: #6ea8ff; --omd-s2: #b98bff; --omd-s3: #3cc9bb;
+  --omd-map-land: #1b2028; --omd-map-road: #2c333e; --omd-map-road-minor: #222831; --omd-map-water: #1f3a52; --omd-map-park: #1d3326;
+}
+.omd-fig { background: var(--omd-panel); border: 1px solid var(--omd-line); border-radius: 14px; padding: 16px 16px 12px; margin: 28px 0; color: var(--omd-ink); }
+.omd-fig-title { font-weight: 650; font-size: .95rem; margin: 0 0 8px; }
+.omd-fig-tag { color: var(--omd-accent); font-family: var(--omd-font-mono); font-size: .8rem; margin-right: .5em; }
+.omd-fig figcaption { font-size: .92rem; color: var(--omd-muted); margin-top: 10px; line-height: 1.5; }
+.omd-fig figcaption strong { color: var(--omd-ink); }
+.omd-svg { display: block; width: 100%; height: auto; }
+.omd-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 12px 0 4px; font-size: .92rem; }
+.omd-controls label { display: inline-flex; align-items: center; gap: 8px; }
+.omd-grow { flex: 1 1 260px; display: flex; align-items: center; gap: 10px; }
+.omd-grow input[type=range] { flex: 1 1 220px; min-width: 160px; accent-color: var(--omd-accent); }
+.omd-controls input[type=checkbox] { accent-color: var(--omd-ok); width: 16px; height: 16px; }
+.omd-btn { font: inherit; font-size: .88rem; color: var(--omd-ink); background: var(--omd-bg); border: 1px solid var(--omd-line); border-radius: 8px; padding: 6px 12px; cursor: pointer; box-shadow: none; height: auto; }
+.omd-btn:hover { border-color: var(--omd-accent); }
+.omd-btn-primary, .omd-btn-primary:hover { background: var(--omd-accent); color: #fff; border-color: var(--omd-accent); }
+.theme-dark .omd-btn-primary { color: #1a0f0a; }
+.omd-readout { font-size: .95rem; min-height: 1.6em; margin-top: 6px; }
+.omd-readout strong { color: var(--omd-accent); }
+.omd-player-anchor { display: inline-block; width: 1px; height: 1px; }
+.omd-grid { display: grid; gap: 12px; margin: 12px 0; }
+.omd-tile { background: var(--omd-panel); border: 1px solid var(--omd-line); border-radius: 10px; padding: 12px 14px; color: var(--omd-ink); }
+.omd-tile-stat b { display: block; font-size: 1.45rem; font-family: var(--omd-font-mono); font-variant-numeric: tabular-nums; color: var(--omd-accent); }
+.omd-tile-stat span { font-size: .88rem; color: var(--omd-muted); }
+.omd-tile-clock, .omd-tile-freq { background: var(--omd-bg); }
+.omd-tile-label { font-size: .82rem; color: var(--omd-muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+.omd-tile-clock .omd-tile-value { font-family: var(--omd-font-mono); font-variant-numeric: tabular-nums; font-size: clamp(1rem, 3.6vw, 1.35rem); margin-top: 4px; white-space: nowrap; }
+.omd-tile-sub { font-size: .85rem; color: var(--omd-muted); }
+.omd-tile-freq { text-align: center; }
+.omd-tile-freq .omd-tile-label { font-size: .8rem; }
+.omd-tile-freq .omd-tile-value { font-family: var(--omd-font-mono); font-size: clamp(.95rem, 3vw, 1.2rem); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.omd-tile-arrow { text-align: center; color: var(--omd-accent); font-size: .85rem; align-self: center; }
+.omd-tile-arrow b { font-size: 1.4rem; display: block; }
+
+/* paint tokens: text */
+.omd-t { fill: var(--omd-ink); font: 13px var(--omd-font-ui); }
+.omd-t-muted { fill: var(--omd-muted); font: 12px var(--omd-font-ui); }
+.omd-t-mono { fill: var(--omd-ink); font: 12px var(--omd-font-mono); }
+.omd-t-big { fill: var(--omd-ink); font: 600 15px var(--omd-font-ui); }
+.omd-italic { font-style: italic; }
+.omd-hot { color: var(--omd-accent); fill: var(--omd-accent); font-weight: 700; }
+.omd-diff-big { font-family: var(--omd-font-mono); font-size: 1.6rem; color: var(--omd-accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+.omd-diff-big.omd-zero { color: var(--omd-ok); }
+/* paint tokens: colours (set color, stroke and text fill together) */
+.omd-s1 { color: var(--omd-s1); stroke: var(--omd-s1); }
+.omd-s2 { color: var(--omd-s2); stroke: var(--omd-s2); }
+.omd-s3 { color: var(--omd-s3); stroke: var(--omd-s3); }
+text.omd-s1 { fill: var(--omd-s1); stroke: none; } text.omd-s2 { fill: var(--omd-s2); stroke: none; } text.omd-s3 { fill: var(--omd-s3); stroke: none; }
+text.omd-c-accent { fill: var(--omd-accent); } text.omd-c-ok { fill: var(--omd-ok); } text.omd-c-warn { fill: var(--omd-warn); }
+.omd-pin-you { color: var(--omd-ok); }
+.omd-pin-gps { color: var(--omd-warn); }
+/* paint tokens: strokes and fills */
+.omd-axis { stroke: var(--omd-muted); stroke-width: 1; }
+.omd-axis-thick { stroke: var(--omd-muted); stroke-width: 2; }
+.omd-gridline { stroke: var(--omd-grid); stroke-width: 1; }
+.omd-wave { fill: none; stroke-width: 1.5; stroke-dasharray: 4 5; }
+.omd-ring { fill: none; stroke-width: 2.2; }
+.omd-xmark { fill: var(--omd-panel); stroke: var(--omd-muted); stroke-width: 2; }
+.omd-crossing { fill: var(--omd-accent); }
+.omd-mismatch { fill: var(--omd-accent-soft); stroke: var(--omd-accent); stroke-width: 1.5; stroke-linejoin: round; }
+.omd-pulse { fill: var(--omd-accent); }
+.omd-signal { stroke: var(--omd-accent); stroke-width: 1.5; stroke-dasharray: 2 6; fill: none; }
+.omd-true-ring { fill: none; stroke: var(--omd-ok); stroke-dasharray: 3 3; stroke-width: 1.5; }
+.omd-ghost { stroke-width: 1.5; stroke-dasharray: 2 5; opacity: .6; }
+.omd-curve { fill: none; stroke-width: 1.6; stroke-dasharray: 5 4; }
+.omd-live { stroke-width: 2; fill: none; }
+.omd-live-net { stroke-width: 3; fill: none; }
+.omd-cursor { stroke: var(--omd-muted); stroke-dasharray: 2 3; }
+.omd-cursor-dot { fill: none; stroke: var(--omd-ink); stroke-width: 2; }
+.omd-hollow { fill: var(--omd-panel); stroke: var(--omd-ink); stroke-width: 1.5; }
+.omd-tick-ref { stroke: var(--omd-line); stroke-width: 1; }
+.omd-trail { fill: none; stroke: var(--omd-warn); stroke-width: 2.5; stroke-dasharray: 1 5; stroke-linecap: round; }
+.omd-link { stroke: var(--omd-warn); stroke-width: 1; opacity: .5; }
+.omd-river { fill: none; stroke: var(--omd-map-water); stroke-width: 18; stroke-linecap: round; }
+.omd-ringroad { fill: none; stroke: var(--omd-map-road); stroke-width: 6; }
+.omd-road { fill: none; stroke: var(--omd-map-road); stroke-width: 5; }
+.omd-street { stroke: var(--omd-map-road-minor); stroke-width: 1.5; }
+.omd-fill-land { fill: var(--omd-map-land); } .omd-fill-park { fill: var(--omd-map-park); } .omd-fill-road { fill: var(--omd-map-road); }
+.omd-fill-panel { fill: var(--omd-panel); } .omd-fill-grid { fill: var(--omd-grid); } .omd-fill-muted { fill: var(--omd-muted); }
+.omd-fill-ok { fill: var(--omd-ok); } .omd-fill-accent { fill: var(--omd-accent); } .omd-fill-warn { fill: var(--omd-warn); }
+.omd-fill-s1 { fill: var(--omd-s1); } .omd-fill-s2 { fill: var(--omd-s2); }
+.omd-stroke-s1 { stroke: var(--omd-s1); } .omd-stroke-s2 { stroke: var(--omd-s2); } .omd-stroke-accent { stroke: var(--omd-accent); } .omd-stroke-ok { stroke: var(--omd-ok); }
+/* glyph parts */
+.omd-sat-body { fill: var(--omd-panel); stroke: var(--omd-ink); stroke-width: 1.4; }
+.omd-sat-panel { fill: currentColor; fill-opacity: .85; stroke: var(--omd-ink); stroke-width: 1; }
+.omd-sat-line { stroke: var(--omd-ink); stroke-width: 1; }
+.omd-glyph-hole { fill: var(--omd-panel); }
+.omd-phone-case { fill: var(--omd-panel); stroke: var(--omd-ink); stroke-width: 1.6; }
+.omd-phone-screen { fill: var(--omd-accent-soft); }
+.omd-phone-button { fill: var(--omd-ink); }

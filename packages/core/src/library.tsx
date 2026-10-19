@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { z } from "zod/v4";
 import { defineComponent } from "@openuidev/react-lang";
 import { openuiLibrary } from "@openuidev/react-ui/genui-lib";
+import { figureComponents, functions } from "./figures";
 
 // What a Slot needs from the note it belongs to: where each block's element is, and when that changes.
 export interface SlotTargets {
@@ -66,7 +67,7 @@ const CountUp = defineComponent({
   component: ({ props }) => {
     const shown = useTween(Number(props.value) || 0);
     return (
-      <span className={`intr-countup intr-countup-${props.size ?? "large"}`}>
+      <span className={`omd-countup omd-countup-${props.size ?? "large"}`}>
         {props.prefix ?? ""}
         {format(shown, props.decimals ?? 0)}
         {props.suffix ?? ""}
@@ -84,13 +85,13 @@ const Progress = defineComponent({
     const shown = useTween(pct);
     const tone = pct >= 100 ? "good" : pct >= 80 ? "close" : "behind";
     return (
-      <div className="intr-progress">
-        <div className="intr-progress-row">
+      <div className="omd-progress">
+        <div className="omd-progress-row">
           <span>{props.label ?? ""}</span>
           <span>{format(shown, 1)}%</span>
         </div>
-        <div className="intr-progress-track">
-          <div className={`intr-progress-fill intr-progress-${tone}`} style={{ width: `${Math.min(shown, 100)}%` }} />
+        <div className="omd-progress-track">
+          <div className={`omd-progress-fill omd-progress-${tone}`} style={{ width: `${Math.min(shown, 100)}%` }} />
         </div>
       </div>
     );
@@ -106,7 +107,7 @@ const Reveal = defineComponent({
   }),
   description: "Animates its children in when they first appear. delay is in milliseconds.",
   component: ({ props, renderNode }) => (
-    <div className={`intr-reveal intr-reveal-${props.effect ?? "slide"}`} style={{ animationDelay: `${props.delay ?? 0}ms` }}>
+    <div className={`omd-reveal omd-reveal-${props.effect ?? "slide"}`} style={{ animationDelay: `${props.delay ?? 0}ms` }}>
       {renderNode(props.children)}
     </div>
   ),
@@ -120,6 +121,8 @@ export const library = openuiLibrary.extend({
       { component: CountUp, slots: inCards },
       { component: Progress, slots: inCards },
       { component: Reveal, slots: inCards },
+      ...figureComponents,
     ],
   },
+  functions: { add: functions },
 });

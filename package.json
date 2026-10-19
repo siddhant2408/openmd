@@ -1,31 +1,26 @@
 {
-  "name": "obsidian-openui",
-  "version": "0.1.0",
-  "description": "Interactive OpenUI blocks in Obsidian notes, connected across the whole note.",
-  "scripts": {
-    "build": "esbuild src/main.tsx --bundle --format=cjs --platform=browser --target=es2022 --minify --external:obsidian --external:electron --define:process.env.NODE_ENV=\\\"production\\\" --outfile=dist/main.js && cat dist/main.css styles.extra.css > dist/styles.css && rm dist/main.css && cp manifest.json dist/",
-    "check": "esbuild stitch.check.ts --bundle --platform=node --format=esm --packages=external --jsx=automatic --outfile=dist/check.mjs --log-level=warning && node dist/check.mjs && tsc",
-    "install-vault": "npm run build && cp dist/main.js dist/styles.css dist/manifest.json example-vault/.obsidian/plugins/intr/"
-  },
+  "name": "openmd-monorepo",
+  "private": true,
+  "type": "module",
+  "description": "openmd: interactive Markdown notes. Packages: @openmd/core (renderer), openmd (CLI and live viewer), @openmd/obsidian (Obsidian plugin).",
   "author": "siddhant2408",
   "license": "MIT",
-  "dependencies": {
-    "@openuidev/lang-core": "^1.0.1",
-    "@openuidev/react-headless": "^0.18.1",
-    "@openuidev/react-lang": "^1.0.1",
-    "@openuidev/react-ui": "^0.18.1",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "zod": "^4.6.7",
-    "zustand": "^4.5.7"
+  "workspaces": [
+    "packages/core",
+    "packages/obsidian",
+    "packages/cli"
+  ],
+  "scripts": {
+    "build": "npm run build -w @openmd/obsidian && npm run build -w openmd",
+    "check": "esbuild check.ts --bundle --platform=node --format=esm --jsx=automatic --loader:.css=empty --outfile=dist/check.mjs --log-level=warning && node dist/check.mjs && tsc",
+    "install-vault": "npm run install-vault -w @openmd/obsidian",
+    "openmd": "node packages/cli/dist/cli.cjs"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "esbuild": "^0.28.2",
-    "obsidian": "^1.14.4",
     "typescript": "^7.0.2"
-  },
-  "type": "module"
+  }
 }
