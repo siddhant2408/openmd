@@ -35,12 +35,13 @@ switch (command) {
     let bad = 0;
     for (const file of args) {
       const problems = checkNote(readFileSync(file, "utf8"));
-      const lines = [
+      // A name used in many places reports the same error each time; list it once.
+      const lines = [...new Set([
         ...problems.duplicates.map((n) => `"${n}" is defined in more than one block`),
         ...problems.unresolved.map((n) => `"${n}" is used but never defined`),
         // Unknown-component errors list the whole catalogue; point at the reference instead.
         ...problems.errors.map((e) => `${e.component ? `${e.component}: ` : ""}${e.message.split(". Available components")[0]}`),
-      ];
+      ])];
       if (lines.length) bad++;
       console.log(lines.length ? `✗ ${file}\n${lines.map((l) => `    ${l}`).join("\n")}` : `✓ ${file}`);
     }

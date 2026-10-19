@@ -58,32 +58,44 @@ One distance doesn't tell you where you are. It tells you that you are somewhere
 The figure plays this out in 2D. All three satellites send at the same instant, because their clocks agree. Each wavefront spreads outward, and the receiver hears the closest satellite first.
 
 ```openui
+// Shared by figures 2 and 3: three satellites and you, in drawing units (y points down).
+you = {x: 300, y: 240}
+satA = {x: 130, y: 170}
+satB = {x: 430, y: 420}
+satC = {x: 580, y: 80}
+dA = @Distance(satA, you)
+dB = @Distance(satB, you)
+dC = @Distance(satC, you)
+satellites = [
+  Glyph("satellite", satA.x - 32, satA.y - 16, 64, 32, "s1"), SvgText(satA.x - 26, satA.y - 18, "A", "t-big s1", "middle"),
+  Glyph("satellite", satB.x - 32, satB.y - 16, 64, 32, "s2"), SvgText(satB.x + 26, satB.y - 18, "B", "t-big s2", "middle"),
+  Glyph("satellite", satC.x - 32, satC.y - 16, 64, 32, "s3"), SvgText(satC.x + 26, satC.y - 18, "C", "t-big s3", "middle")
+]
+```
+
+```openui
 // Wavefronts spread 420 units over the slider's 0–1000; each ring locks when it reaches you.
 $t = 0
 waveR = $t / 1000 * 420
-heardCount = (waveR >= 183.8478 ? 1 : 0) + (waveR >= 222.036 ? 1 : 0) + (waveR >= 322.4903 ? 1 : 0)
+heardCount = (waveR >= dA ? 1 : 0) + (waveR >= dB ? 1 : 0) + (waveR >= dC ? 1 : 0)
+falseCrossing = @Last(@Intersect({x: satA.x, y: satA.y, r: dA}, {x: satB.x, y: satB.y, r: dB}, you))
 stageText = heardCount == 0 ? "The signals leave all three satellites at the same instant. Their clocks agree, which is the whole point." : heardCount == 1 ? "A’s signal arrives first. Its travel time gives a distance, so you are somewhere on that circle." : heardCount == 2 ? "B arrives next. Two circles cross at two points, and you are at one of them." : "C arrives last. Only one point lies on all three circles. That is your position."
 root = Figure("FIG 2", "Three wavefronts, one place they agree", [
   Svg("0 0 640 460", [
-    Circle(130, 170, @Max([0.01, waveR]), "wave s1", waveR < 183.8478 ? 0.75 : @Max([0, 1 - (waveR - 183.8478) / 70]) * 0.5),
-    Circle(430, 420, @Max([0.01, waveR]), "wave s2", waveR < 222.036 ? 0.75 : @Max([0, 1 - (waveR - 222.036) / 70]) * 0.5),
-    Circle(580, 80, @Max([0.01, waveR]), "wave s3", waveR < 322.4903 ? 0.75 : @Max([0, 1 - (waveR - 322.4903) / 70]) * 0.5),
-    Circle(130, 170, 183.8478, "ring s1", null, waveR >= 183.8478),
-    Circle(430, 420, 222.036, "ring s2", null, waveR >= 222.036),
-    Circle(580, 80, 322.4903, "ring s3", null, waveR >= 322.4903),
+    Circle(satA.x, satA.y, @Max([0.01, waveR]), "wave s1", waveR < dA ? 0.75 : @Max([0, 1 - (waveR - dA) / 70]) * 0.5),
+    Circle(satB.x, satB.y, @Max([0.01, waveR]), "wave s2", waveR < dB ? 0.75 : @Max([0, 1 - (waveR - dB) / 70]) * 0.5),
+    Circle(satC.x, satC.y, @Max([0.01, waveR]), "wave s3", waveR < dC ? 0.75 : @Max([0, 1 - (waveR - dC) / 70]) * 0.5),
+    Circle(satA.x, satA.y, dA, "ring s1", null, waveR >= dA),
+    Circle(satB.x, satB.y, dB, "ring s2", null, waveR >= dB),
+    Circle(satC.x, satC.y, dC, "ring s3", null, waveR >= dC),
     Group([
-      Circle(229.5082, 324.5902, 7, "xmark"),
-      SvgText(241.5082, 328.5902, heardCount == 3 ? "ruled out: not on C’s circle" : "a second candidate", "t-muted")
+      Circle(falseCrossing.x, falseCrossing.y, 7, "xmark"),
+      SvgText(falseCrossing.x + 12, falseCrossing.y + 4, heardCount == 3 ? "ruled out: not on C’s circle" : "a second candidate", "t-muted")
     ], null, null, heardCount == 3 ? 0.45 : 1, heardCount >= 2),
-    Circle(300, 240, 7, "xmark", null, heardCount == 2),
-    Glyph("pin", 288, 204, 24, 36, "pin-you", null, heardCount == 3),
-    SvgText(314, 258, "you are here", "t-big", null, heardCount == 3),
-    Glyph("satellite", 98, 154, 64, 32, "s1"),
-    SvgText(104, 152, "A", "t-big s1", "middle"),
-    Glyph("satellite", 398, 404, 64, 32, "s2"),
-    SvgText(456, 402, "B", "t-big s2", "middle"),
-    Glyph("satellite", 548, 64, 64, 32, "s3"),
-    SvgText(606, 62, "C", "t-big s3", "middle")
+    Circle(you.x, you.y, 7, "xmark", null, heardCount == 2),
+    Glyph("pin", you.x - 12, you.y - 36, 24, 36, "pin-you", null, heardCount == 3),
+    SvgText(you.x + 14, you.y + 18, "you are here", "t-big", null, heardCount == 3),
+    satellites
   ], "Three satellites send signals at the same moment. Expanding circles reach the receiver one after another; three circles share one point, the receiver's position."),
   Controls([
     Player("t", $t, 1000, 7500, "▶ Play", "❚❚ Pause", true),
@@ -109,76 +121,36 @@ four unknowns: x, y, z (where you are) and b (how wrong your clock is)
 In 3D there are four unknowns, so you need four satellites. On a flat page there are three unknowns: x, y and b. Use the slider to put the receiver clock out of step, then let the receiver solve for the error.
 
 ```openui
-// Every circle grows by the same clock error. The three pairwise crossings nearest the true
-// position form the orange triangle; it shrinks to a point when the error is zero.
+// Every circle grows by the same clock error. The three pairwise crossings nearest you form the
+// orange triangle; it shrinks to a point when the error is zero.
 $bErr = 34
-bErr = $bErr
-abRp = 183.8478 + bErr
-abRq = 222.036 + bErr
-abOk = 390.512484 <= abRp + abRq && 390.512484 >= @Abs(abRp - abRq)
-abA = (abRp * abRp - abRq * abRq + 390.512484 * 390.512484) / (2 * 390.512484)
-abH = @Sqrt(@Max([0, abRp * abRp - abA * abA]))
-abMx = 130 + abA * 300 / 390.512484
-abMy = 170 + abA * 250 / 390.512484
-abX1 = abMx - abH * 250 / 390.512484
-abY1 = abMy + abH * 300 / 390.512484
-abX2 = abMx + abH * 250 / 390.512484
-abY2 = abMy - abH * 300 / 390.512484
-abNear1 = (abX1 - 300) * (abX1 - 300) + (abY1 - 240) * (abY1 - 240) <= (abX2 - 300) * (abX2 - 300) + (abY2 - 240) * (abY2 - 240)
-abX = abNear1 ? abX1 : abX2
-abY = abNear1 ? abY1 : abY2
-bcRp = 222.036 + bErr
-bcRq = 322.4903 + bErr
-bcOk = 371.618084 <= bcRp + bcRq && 371.618084 >= @Abs(bcRp - bcRq)
-bcA = (bcRp * bcRp - bcRq * bcRq + 371.618084 * 371.618084) / (2 * 371.618084)
-bcH = @Sqrt(@Max([0, bcRp * bcRp - bcA * bcA]))
-bcMx = 430 + bcA * 150 / 371.618084
-bcMy = 420 + bcA * -340 / 371.618084
-bcX1 = bcMx - bcH * -340 / 371.618084
-bcY1 = bcMy + bcH * 150 / 371.618084
-bcX2 = bcMx + bcH * -340 / 371.618084
-bcY2 = bcMy - bcH * 150 / 371.618084
-bcNear1 = (bcX1 - 300) * (bcX1 - 300) + (bcY1 - 240) * (bcY1 - 240) <= (bcX2 - 300) * (bcX2 - 300) + (bcY2 - 240) * (bcY2 - 240)
-bcX = bcNear1 ? bcX1 : bcX2
-bcY = bcNear1 ? bcY1 : bcY2
-acRp = 183.8478 + bErr
-acRq = 322.4903 + bErr
-acOk = 458.911756 <= acRp + acRq && 458.911756 >= @Abs(acRp - acRq)
-acA = (acRp * acRp - acRq * acRq + 458.911756 * 458.911756) / (2 * 458.911756)
-acH = @Sqrt(@Max([0, acRp * acRp - acA * acA]))
-acMx = 130 + acA * 450 / 458.911756
-acMy = 170 + acA * -90 / 458.911756
-acX1 = acMx - acH * -90 / 458.911756
-acY1 = acMy + acH * 450 / 458.911756
-acX2 = acMx + acH * -90 / 458.911756
-acY2 = acMy - acH * 450 / 458.911756
-acNear1 = (acX1 - 300) * (acX1 - 300) + (acY1 - 240) * (acY1 - 240) <= (acX2 - 300) * (acX2 - 300) + (acY2 - 240) * (acY2 - 240)
-acX = acNear1 ? acX1 : acX2
-acY = acNear1 ? acY1 : acY2
-crossCount = (abOk ? 1 : 0) + (bcOk ? 1 : 0) + (acOk ? 1 : 0)
-triangle = crossCount == 3 ? @Fixed(abX, 1) + "," + @Fixed(abY, 1) + " " + @Fixed(bcX, 1) + "," + @Fixed(bcY, 1) + " " + @Fixed(acX, 1) + "," + @Fixed(acY, 1) : ""
-spread = @Max([@Sqrt((abX - bcX) * (abX - bcX) + (abY - bcY) * (abY - bcY)), @Sqrt((bcX - acX) * (bcX - acX) + (bcY - acY) * (bcY - acY)), @Sqrt((abX - acX) * (abX - acX) + (abY - acY) * (abY - acY))])
-solved = @Abs(bErr) < 0.5
-errUnits = @Abs(@Round(bErr))
-biasText = solved ? "**Clock error ≈ 0.** All three circles meet at one point. The receiver now knows both where it is and what time it is." : "Receiver clock is **" + (bErr > 0 ? "ahead" : "behind") + "** by " + errUnits + " units. Every signal seems to take " + (bErr > 0 ? "longer" : "less time") + ", so every circle is " + errUnits + " units too " + (bErr > 0 ? "big" : "small") + ". " + (crossCount < 3 ? "Some circles no longer even touch." : "The three crossings are **" + @Fixed(spread, 0) + " units** apart.")
+ringA = {x: satA.x, y: satA.y, r: dA + $bErr}
+ringB = {x: satB.x, y: satB.y, r: dB + $bErr}
+ringC = {x: satC.x, y: satC.y, r: dC + $bErr}
+abHits = @Intersect(ringA, ringB, you)
+bcHits = @Intersect(ringB, ringC, you)
+acHits = @Intersect(ringA, ringC, you)
+ab = @First(abHits)
+bc = @First(bcHits)
+ac = @First(acHits)
+crossCount = (@Count(abHits) > 0 ? 1 : 0) + (@Count(bcHits) > 0 ? 1 : 0) + (@Count(acHits) > 0 ? 1 : 0)
+spread = @Max([@Distance(ab, bc), @Distance(bc, ac), @Distance(ab, ac)])
+solved = @Abs($bErr) < 0.5
+errUnits = @Abs(@Round($bErr))
+biasText = solved ? "**Clock error ≈ 0.** All three circles meet at one point. The receiver now knows both where it is and what time it is." : "Receiver clock is **" + ($bErr > 0 ? "ahead" : "behind") + "** by " + errUnits + " units. Every signal seems to take " + ($bErr > 0 ? "longer" : "less time") + ", so every circle is " + errUnits + " units too " + ($bErr > 0 ? "big" : "small") + ". " + (crossCount < 3 ? "Some circles no longer even touch." : "The three crossings are **" + @Fixed(spread, 0) + " units** apart.")
 root = Figure("FIG 3", "A wrong clock inflates every circle by the same amount", [
   Svg("0 0 640 460", [
-    Circle(130, 170, @Max([1, 183.8478 + bErr]), "ring s1"),
-    Circle(430, 420, @Max([1, 222.036 + bErr]), "ring s2"),
-    Circle(580, 80, @Max([1, 322.4903 + bErr]), "ring s3"),
-    Polygon(triangle, "mismatch"),
-    Circle(abX, abY, 4, "crossing", null, abOk),
-    Circle(bcX, bcY, 4, "crossing", null, bcOk),
-    Circle(acX, acY, 4, "crossing", null, acOk),
-    Circle(300, 240, 14, "true-ring"),
-    SvgText(282, 270, "true position", "t-muted", "end"),
-    Glyph("satellite", 98, 154, 64, 32, "s1"),
-    SvgText(104, 152, "A", "t-big s1", "middle"),
-    Glyph("satellite", 398, 404, 64, 32, "s2"),
-    SvgText(456, 402, "B", "t-big s2", "middle"),
-    Glyph("satellite", 548, 64, 64, 32, "s3"),
-    SvgText(606, 62, "C", "t-big s3", "middle"),
-    Glyph("pin", 288, 204, 24, 36, "pin-you", null, solved)
+    Circle(ringA.x, ringA.y, @Max([1, ringA.r]), "ring s1"),
+    Circle(ringB.x, ringB.y, @Max([1, ringB.r]), "ring s2"),
+    Circle(ringC.x, ringC.y, @Max([1, ringC.r]), "ring s3"),
+    Polygon(crossCount == 3 ? [ab, bc, ac] : [], "mismatch"),
+    Circle(ab.x, ab.y, 4, "crossing", null, @Count(abHits) > 0),
+    Circle(bc.x, bc.y, 4, "crossing", null, @Count(bcHits) > 0),
+    Circle(ac.x, ac.y, 4, "crossing", null, @Count(acHits) > 0),
+    Circle(you.x, you.y, 14, "true-ring"),
+    SvgText(you.x - 18, you.y + 30, "true position", "t-muted", "end"),
+    satellites,
+    Glyph("pin", you.x - 12, you.y - 36, 24, 36, "pin-you", null, solved)
   ], "The same three satellites with every circle enlarged or shrunk by the receiver's clock error. The pairwise crossings form a triangle around the true position that shrinks to a point at zero error."),
   Controls([
     Scrubber("bErr", -30, 60, 1, $bErr, "receiver clock error"),
@@ -195,7 +167,7 @@ The receiver can only correct an error that is the same for every satellite, lik
 So the satellite clocks must agree with GPS time to within a few nanoseconds. Use the slider to see how fast a small timing error grows into a large position error.
 
 ```openui
-// The slider is log10(ns) × 100: 0 is 1 ns, 600 is 1 ms.
+// The slider is log10(ns) × 100: 0 is 1 ns, 600 is 1 ms. The ruler plots log10(ns) across.
 $nsLog = 100
 clockNs = @Pow(10, $nsLog / 100)
 clockM = clockNs * 0.299792458
@@ -205,25 +177,25 @@ sizeRefs = [{m: 0.3, n: "a 30 cm ruler"}, {m: 1.7, n: "a person standing up"}, {
 closestRef = @First(@Sort(@Each(sizeRefs, "r", {n: r.n, gap: @Abs(@Log10(r.m / clockM))}), "gap")).n
 nsText = "**" + clockText + "** of clock error → **" + distText + "** of distance error. Roughly " + closestRef + "." + (clockNs <= 10 ? " Within the GPS budget." : "")
 decades = [{i: 0, a: "1 ns", b: "30 cm"}, {i: 1, a: "10 ns", b: "3 m"}, {i: 2, a: "100 ns", b: "30 m"}, {i: 3, a: "1 μs", b: "300 m"}, {i: 4, a: "10 μs", b: "3 km"}, {i: 5, a: "100 μs", b: "30 km"}, {i: 6, a: "1 ms", b: "300 km"}]
-rulerMarks = [{m: 1.7, n: "person", y: 30}, {m: 4.5, n: "car", y: 56}, {m: 25, n: "whale", y: 30}, {m: 330, n: "Eiffel Tower", y: 56}, {m: 11500, n: "1 day of relativity", y: 30}, {m: 290000, n: "Bengaluru → Chennai", y: 56}]
+rulerMarks = @Each([{m: 1.7, n: "person", y: 30}, {m: 4.5, n: "car", y: 56}, {m: 25, n: "whale", y: 30}, {m: 330, n: "Eiffel Tower", y: 56}, {m: 11500, n: "1 day of relativity", y: 30}, {m: 290000, n: "Bengaluru → Chennai", y: 56}], "r", {x: @Log10(r.m / 0.299792458), y: r.y, n: r.n})
 root = Figure("FIG 4", "From clock error to position error", [
-  Svg("0 0 640 150", [
-    Rect(40, 96, 560, 10, 5, "fill-grid"),
-    Rect(40, 96, (40 + @Log10(10) / 6 * 560) - 40, 10, 5, "fill-ok", 0.35),
-    SvgText(40, 90, "GPS budget", "t-muted c-ok"),
-    Rect(40, 96, @Max([0, (40 + @Log10(clockNs) / 6 * 560) - 40]), 10, 5, "fill-accent", 0.85),
+  Svg("0 0 640 150", [Plot([0, 6], [150, 0], [40, 0, 560, 150], [
+    Rect(0, 96, 6, 10, 5, "fill-grid"),
+    Rect(0, 96, 1, 10, 5, "fill-ok", 0.35),
+    SvgText(0, 90, "GPS budget", "t-muted c-ok"),
+    Rect(0, 96, @Log10(clockNs), 10, 5, "fill-accent", 0.85),
     @Each(decades, "d", Group([
-      Line(40 + d.i / 6 * 560, 108, 40 + d.i / 6 * 560, 116, "axis"),
-      SvgText(40 + d.i / 6 * 560, 130, d.a, "t-mono", "middle"),
-      SvgText(40 + d.i / 6 * 560, 145, d.b, "t-muted", "middle")
+      Line(d.i, 108, d.i, 116, "axis"),
+      SvgText(d.i, 130, d.a, "t-mono", "middle"),
+      SvgText(d.i, 145, d.b, "t-muted", "middle")
     ])),
     @Each(rulerMarks, "r", Group([
-      Line((40 + @Log10(r.m / 0.299792458) / 6 * 560), r.y + 4, (40 + @Log10(r.m / 0.299792458) / 6 * 560), 94, "tick-ref"),
-      Circle((40 + @Log10(r.m / 0.299792458) / 6 * 560), 101, 2.5, "fill-muted"),
-      SvgText((40 + @Log10(r.m / 0.299792458) / 6 * 560), r.y, r.n, "t-muted", (40 + @Log10(r.m / 0.299792458) / 6 * 560) > 520 ? "end" : "middle")
+      Line(r.x, r.y + 4, r.x, 94, "tick-ref"),
+      Circle(r.x, 101, 2.5, "fill-muted"),
+      SvgText(r.x, r.y, r.n, "t-muted", r.x > 5.14 ? "end" : "middle")
     ])),
-    Group([Path("M0 0 L-7 -12 L7 -12 Z", "fill-accent")], "translate(" + (40 + @Log10(clockNs) / 6 * 560) + " 94)")
-  ], "A log scale from 1 nanosecond (30 centimetres) to 1 millisecond (300 kilometres), with familiar objects marked along it."),
+    Group([Path("M0 0 L-7 -12 L7 -12 Z", "fill-accent")], null, null, null, null, [@Log10(clockNs), 94])
+  ])], "A log scale from 1 nanosecond (30 centimetres) to 1 millisecond (300 kilometres), with familiar objects marked along it."),
   Controls([Scrubber("nsLog", 0, 600, 1, $nsLog, "clock error")]),
   Controls([
     Btn("Good atomic clock (≈2 ns)", Action([@Set($nsLog, 30.10299957)])),
@@ -259,24 +231,24 @@ root = Figure("FIG 5", "Two identical clocks, one on the ground and one in orbit
     Tile("On the ground", clockHms + ".000 000 0", "reference: GPS time", "clock"),
     Tile("In orbit, 20,200 km up", [Span(clockHms + "."), orbitDigits], [Span("gap: "), Span("+" + @Fixed(driftUs, 1) + " μs", $factoryFix ? "diff-big zero" : "diff-big")], "clock")
   ], 240),
-  Svg("0 0 640 250", [
+  Svg("0 0 640 250", [Plot([0, 24], [-10, 50], [56, 20, 470, 190], [
     @Each([-10, 0, 10, 20, 30, 40, 50], "v", Group([
-      Line(56, (210 - ((v) + 10) / 60 * 190), 526, (210 - ((v) + 10) / 60 * 190), v == 0 ? "axis" : "gridline"),
-      SvgText(48, (210 - ((v) + 10) / 60 * 190) + 4, (v > 0 ? "+" : "") + v, "t-muted", "end")
+      Line(0, v, 24, v, v == 0 ? "axis" : "gridline"),
+      SvgText(0, v, (v > 0 ? "+" : "") + v, "t-muted", "end", null, -8, 4)
     ])),
-    @Each([0, 6, 12, 18, 24], "h", SvgText((56 + (h) / 24 * 470), 232, h + " h", "t-muted", "middle")),
-    SvgText(48, 14, "μs ahead", "t-muted", "start"),
-    Line(56, (210 - ((0) + 10) / 60 * 190), 526, (210 - ((45.7) + 10) / 60 * 190), "ghost stroke-s1"),
-    Line(56, (210 - ((0) + 10) / 60 * 190), 526, (210 - ((-7.2) + 10) / 60 * 190), "ghost stroke-s2"),
-    Line(56, (210 - ((0) + 10) / 60 * 190), 526, (210 - ((38.5) + 10) / 60 * 190), "ghost stroke-accent"),
-    SvgText(532, (210 - ((45.7) + 10) / 60 * 190) + 4, "height +45.7", "t-muted s1"),
-    SvgText(532, (210 - ((38.5) + 10) / 60 * 190) + 4, "net +38.5", "t-muted c-accent"),
-    SvgText(532, (210 - ((-7.2) + 10) / 60 * 190) + 4, "speed −7.2", "t-muted s2"),
-    Line(56, (210 - ((0) + 10) / 60 * 190), (56 + (dayHours) / 24 * 470), (210 - ((45.7 * dayHours / 24) + 10) / 60 * 190), "live stroke-s1", $factoryFix ? 0.25 : 1),
-    Line(56, (210 - ((0) + 10) / 60 * 190), (56 + (dayHours) / 24 * 470), (210 - ((-7.2 * dayHours / 24) + 10) / 60 * 190), "live stroke-s2", $factoryFix ? 0.25 : 1),
-    Line(56, (210 - ((0) + 10) / 60 * 190), (56 + (dayHours) / 24 * 470), (210 - ((driftUs) + 10) / 60 * 190), $factoryFix ? "live-net stroke-ok" : "live-net stroke-accent"),
-    Circle((56 + (dayHours) / 24 * 470), (210 - ((driftUs) + 10) / 60 * 190), 5, $factoryFix ? "fill-ok" : "fill-accent")
-  ], "How far the orbiting clock is from the ground clock over 24 hours: general relativity alone adds 45.7 microseconds, special relativity alone removes 7.2, and the net gap reaches 38.5 microseconds after one day."),
+    @Each([0, 6, 12, 18, 24], "h", SvgText(h, -10, h + " h", "t-muted", "middle", null, null, 22)),
+    SvgText(0, 50, "μs ahead", "t-muted", "start", null, -8, -6),
+    Line(0, 0, 24, 45.7, "ghost stroke-s1"),
+    Line(0, 0, 24, -7.2, "ghost stroke-s2"),
+    Line(0, 0, 24, 38.5, "ghost stroke-accent"),
+    SvgText(24, 45.7, "height +45.7", "t-muted s1", null, null, 6, 4),
+    SvgText(24, 38.5, "net +38.5", "t-muted c-accent", null, null, 6, 4),
+    SvgText(24, -7.2, "speed −7.2", "t-muted s2", null, null, 6, 4),
+    Line(0, 0, dayHours, 45.7 * dayHours / 24, "live stroke-s1", $factoryFix ? 0.25 : 1),
+    Line(0, 0, dayHours, -7.2 * dayHours / 24, "live stroke-s2", $factoryFix ? 0.25 : 1),
+    Line(0, 0, dayHours, driftUs, $factoryFix ? "live-net stroke-ok" : "live-net stroke-accent"),
+    Circle(dayHours, driftUs, 5, $factoryFix ? "fill-ok" : "fill-accent")
+  ])], "How far the orbiting clock is from the ground clock over 24 hours: general relativity alone adds 45.7 microseconds, special relativity alone removes 7.2, and the net gap reaches 38.5 microseconds after one day."),
   Controls([
     Player("clockHours", $clockHours, 24, 9000, "▶ Run one day", "❚❚ Pause", true),
     Btn("Reset", Action([@Set($clockHours, 0)])),
@@ -307,33 +279,35 @@ The two effects depend on altitude in different ways. In low orbit you move fast
 // Weak-field rates for circular orbits: Δf/f ≈ ΔΦ/c² − v²/2c², in μs per day.
 $altKm = 20200
 muDay = 398600441800000 / 89875517873681764 * 86400000000
-altGr = (muDay * (1 / 6371000 - 1 / (6371000 + ($altKm) * 1000)))
-altSr = (0 - muDay / (6371000 + ($altKm) * 1000) / 2)
+altCurve = @Each(@Seq(0, 40000, 200), "k", {k: k, gr: muDay * (1 / 6371000 - 1 / (6371000 + k * 1000)), sr: 0 - muDay / (6371000 + k * 1000) / 2})
+orbitMarks = @Each([{k: 400, n: "ISS"}, {k: 20200, n: "GPS"}, {k: 35786, n: "geostationary"}], "p", {k: p.k, n: p.n, net: muDay * (1 / 6371000 - 1 / (6371000 + p.k * 1000)) - muDay / (6371000 + p.k * 1000) / 2})
+altGr = muDay * (1 / 6371000 - 1 / (6371000 + $altKm * 1000))
+altSr = 0 - muDay / (6371000 + $altKm * 1000) / 2
 altNet = altGr + altSr
+farEnd = @Last(altCurve)
 altText = "At **" + @Locale($altKm) + " km**: height " + (altGr >= 0 ? "+" : "−") + @Fixed(@Abs(altGr), 1) + " μs, speed " + (altSr >= 0 ? "+" : "−") + @Fixed(@Abs(altSr), 1) + " μs, net **" + (altNet >= 0 ? "+" : "−") + @Fixed(@Abs(altNet), 1) + " μs per day**. The clock runs " + (altNet >= 0 ? "fast" : "slow") + "."
-orbitMarks = [{k: 400, n: "ISS"}, {k: 20200, n: "GPS"}, {k: 35786, n: "geostationary"}]
 root = Figure("FIG 6", "Clock drift by orbit altitude (circular orbits)", [
-  Svg("0 0 640 300", [
+  Svg("0 0 640 300", [Plot([0, 40000], [-35, 60], [60, 25, 540, 225], [
     @Each([-30, -15, 0, 15, 30, 45, 60], "v", Group([
-      Line(60, (250 - ((v) + 35) / 95 * 225), 600, (250 - ((v) + 35) / 95 * 225), v == 0 ? "axis" : "gridline"),
-      SvgText(52, (250 - ((v) + 35) / 95 * 225) + 4, (v > 0 ? "+" : "") + v, "t-muted", "end")
+      Line(0, v, 40000, v, v == 0 ? "axis" : "gridline"),
+      SvgText(0, v, (v > 0 ? "+" : "") + v, "t-muted", "end", null, -8, 4)
     ])),
-    @Each([0, 10000, 20000, 30000, 40000], "k", SvgText((60 + (k) / 40000 * 540), 272, k / 1000 + "k km", "t-muted", "middle")),
-    SvgText(52, 14, "μs/day vs ground", "t-muted"),
-    Path("M" + @Join(@Each(@Seq(0, 40000, 200), "k", @Fixed((60 + (k) / 40000 * 540), 1) + " " + @Fixed((250 - (((muDay * (1 / 6371000 - 1 / (6371000 + (k) * 1000)))) + 35) / 95 * 225), 1)), "L"), "curve stroke-s1"),
-    Path("M" + @Join(@Each(@Seq(0, 40000, 200), "k", @Fixed((60 + (k) / 40000 * 540), 1) + " " + @Fixed((250 - (((0 - muDay / (6371000 + (k) * 1000) / 2)) + 35) / 95 * 225), 1)), "L"), "curve stroke-s2"),
-    Path("M" + @Join(@Each(@Seq(0, 40000, 200), "k", @Fixed((60 + (k) / 40000 * 540), 1) + " " + @Fixed((250 - ((((muDay * (1 / 6371000 - 1 / (6371000 + (k) * 1000))) + (0 - muDay / (6371000 + (k) * 1000) / 2))) + 35) / 95 * 225), 1)), "L"), "live-net stroke-accent"),
-    SvgText(596, (250 - (((muDay * (1 / 6371000 - 1 / (6371000 + (40000) * 1000)))) + 35) / 95 * 225) - 8, "height", "t-muted s1", "end"),
-    SvgText(596, (250 - (((0 - muDay / (6371000 + (40000) * 1000) / 2)) + 35) / 95 * 225) + 16, "speed", "t-muted s2", "end"),
-    Circle((60 + (3185.5) / 40000 * 540), (250 - ((0) + 35) / 95 * 225), 4, "hollow"),
-    SvgText((60 + (3185.5) / 40000 * 540) + 8, (250 - ((0) + 35) / 95 * 225) + 16, "break-even ≈ 3190 km", "t-muted"),
+    @Each([0, 10000, 20000, 30000, 40000], "k", SvgText(k, -35, k / 1000 + "k km", "t-muted", "middle", null, null, 22)),
+    SvgText(0, 60, "μs/day vs ground", "t-muted", null, null, -8, -11),
+    Polyline(@Each(altCurve, "p", {x: p.k, y: p.gr}), "curve stroke-s1"),
+    Polyline(@Each(altCurve, "p", {x: p.k, y: p.sr}), "curve stroke-s2"),
+    Polyline(@Each(altCurve, "p", {x: p.k, y: p.gr + p.sr}), "live-net stroke-accent"),
+    SvgText(40000, farEnd.gr, "height", "t-muted s1", "end", null, -4, -8),
+    SvgText(40000, farEnd.sr, "speed", "t-muted s2", "end", null, -4, 16),
+    Circle(3185.5, 0, 4, "hollow"),
+    SvgText(3185.5, 0, "break-even ≈ 3190 km", "t-muted", null, null, 8, 16),
     @Each(orbitMarks, "p", Group([
-      Circle((60 + (p.k) / 40000 * 540), (250 - ((((muDay * (1 / 6371000 - 1 / (6371000 + (p.k) * 1000))) + (0 - muDay / (6371000 + (p.k) * 1000) / 2))) + 35) / 95 * 225), 5, "fill-accent"),
-      SvgText((60 + (p.k) / 40000 * 540) + (p.k > 30000 ? -8 : 8), (250 - ((((muDay * (1 / 6371000 - 1 / (6371000 + (p.k) * 1000))) + (0 - muDay / (6371000 + (p.k) * 1000) / 2))) + 35) / 95 * 225) - 10, p.n + " " + (((muDay * (1 / 6371000 - 1 / (6371000 + (p.k) * 1000))) + (0 - muDay / (6371000 + (p.k) * 1000) / 2)) > 0 ? "+" : "−") + @Fixed(@Abs(((muDay * (1 / 6371000 - 1 / (6371000 + (p.k) * 1000))) + (0 - muDay / (6371000 + (p.k) * 1000) / 2))), 1), "t", p.k > 30000 ? "end" : "start")
+      Circle(p.k, p.net, 5, "fill-accent"),
+      SvgText(p.k, p.net, p.n + " " + (p.net > 0 ? "+" : "−") + @Fixed(@Abs(p.net), 1), "t", p.k > 30000 ? "end" : "start", null, p.k > 30000 ? -8 : 8, -10)
     ])),
-    Line((60 + ($altKm) / 40000 * 540), (250 - ((60) + 35) / 95 * 225), (60 + ($altKm) / 40000 * 540), (250 - ((-35) + 35) / 95 * 225), "cursor"),
-    Circle((60 + ($altKm) / 40000 * 540), (250 - ((altNet) + 35) / 95 * 225), 6, "cursor-dot")
-  ], "Clock drift from 0 to 40,000 km altitude. The height gain rises, the speed loss shrinks, and the net crosses zero near 3,200 km. ISS −24.7, GPS +38.5, geostationary +46.5 microseconds per day."),
+    Line($altKm, 60, $altKm, -35, "cursor"),
+    Circle($altKm, altNet, 6, "cursor-dot")
+  ])], "Clock drift from 0 to 40,000 km altitude. The height gain rises, the speed loss shrinks, and the net crosses zero near 3,200 km. ISS −24.7, GPS +38.5, geostationary +46.5 microseconds per day."),
   Controls([Scrubber("altKm", 200, 40000, 100, $altKm, "altitude")]),
   Readout(altText)
 ], "Computed from the weak-field formulas (Δf/f ≈ ΔΦ/c² − v²/2c²) for a circular orbit, compared with a clock at rest at sea level. The small effect of Earth's rotation on the ground clock is left out.")
@@ -344,14 +318,14 @@ root = Figure("FIG 6", "Clock drift by orbit altitude (circular orbits)", [
 Turn 38.5 μs into distance and you get **about 11.5 km of ranging error per day**, adding up day after day. After a week the error would be about the length of a big city.
 
 ```openui
-// The slider counts tenths of an hour. The pin drifts 11.54 km/day (369 px at 32 px/km).
+// The slider counts tenths of an hour. The pin drifts 11.54 km/day (369 px at 32 px/km) in a
+// wobbling direction; each trail point is that drift so far, at that hour's angle.
 $mapTenths = 0
 $mapFix = false
 mapStep = @Round($mapTenths)
 mapHours = mapStep / 10
-pinX = $mapFix ? 130 : (130 + 369.344308256 * (mapHours) / 24 * @Cos((-0.55 + 0.32 * @Sin((mapHours) / 24 * 6.283185307179586 * 1.5) + 0.14 * @Sin((mapHours) / 24 * 6.283185307179586 * 4.3 + 1))))
-pinY = $mapFix ? 330 : (330 + 369.344308256 * (mapHours) / 24 * @Sin((-0.55 + 0.32 * @Sin((mapHours) / 24 * 6.283185307179586 * 1.5) + 0.14 * @Sin((mapHours) / 24 * 6.283185307179586 * 4.3 + 1))))
-trailPoints = $mapFix ? "" : @Join(@Each(@Seq(0, mapHours, 0.1), "k", @Fixed((130 + 369.344308256 * (k) / 24 * @Cos((-0.55 + 0.32 * @Sin((k) / 24 * 6.283185307179586 * 1.5) + 0.14 * @Sin((k) / 24 * 6.283185307179586 * 4.3 + 1)))), 1) + "," + @Fixed((330 + 369.344308256 * (k) / 24 * @Sin((-0.55 + 0.32 * @Sin((k) / 24 * 6.283185307179586 * 1.5) + 0.14 * @Sin((k) / 24 * 6.283185307179586 * 4.3 + 1)))), 1)), " ")
+pinTrail = $mapFix ? [] : @Each(@Seq(0, mapHours, 0.1), "k", @Polar(130, 330, 369.344308256 * k / 24, -0.55 + 0.32 * @Sin(k / 24 * 6.283185307179586 * 1.5) + 0.14 * @Sin(k / 24 * 6.283185307179586 * 4.3 + 1)))
+pinNow = $mapFix ? {x: 130, y: 330} : @Last(pinTrail)
 hoursText = mapStep % 10 == 0 ? @Fixed(mapHours, 0) : @Fixed(mapHours, 1)
 mapText = $mapFix ? "With the correction applied, the pin stays on you. After " + hoursText + " h, the relativistic error is effectively **zero**." : "After **" + hoursText + " h** without correction, the timing error equals **" + @Fixed(11.542009633 * mapHours / 24, 2) + " km**."
 root = Figure("FIG 7", "A pin that wanders away from you", [
@@ -368,12 +342,12 @@ root = Figure("FIG 7", "A pin that wanders away from you", [
     SvgText(530, 372, "airport", "t-muted"),
     SvgText(404, 296, "park", "t-muted"),
     SvgText(560, 172, "river", "t-muted italic"),
-    Polyline(trailPoints, "trail"),
-    Line(130, 330, pinX, pinY, "link"),
+    Polyline(pinTrail, "trail"),
+    Line(130, 330, pinNow.x, pinNow.y, "link"),
     Glyph("pin", 118, 294, 24, 36, "pin-you"),
     SvgText(144, 334, "you", "t-big"),
-    Glyph("pin", pinX - 12, pinY - 36, 24, 36, "pin-gps", null, !$mapFix && mapHours >= 0.05),
-    SvgText(pinX + 14, pinY - 18, "GPS says", "t-big c-warn", null, !$mapFix && mapHours >= 0.3),
+    Glyph("pin", pinNow.x - 12, pinNow.y - 36, 24, 36, "pin-gps", null, !$mapFix && mapHours >= 0.05),
+    SvgText(pinNow.x + 14, pinNow.y - 18, "GPS says", "t-big c-warn", null, !$mapFix && mapHours >= 0.3),
     Group([
       Rect(-8, -16, 160, 34, 6, "fill-panel", 0.9),
       Line(0, 6, 144, 6, "axis-thick"),
