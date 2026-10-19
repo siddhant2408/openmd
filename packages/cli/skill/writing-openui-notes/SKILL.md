@@ -1,21 +1,20 @@
 ---
 name: writing-openui-notes
-description: Use when creating or editing an Obsidian note that uses ```openui blocks, when building an interactive figure, explainer, animation, calculator or dashboard inside Obsidian, or when turning an HTML page or slashdocs document into an Obsidian note.
+description: Use when creating or editing a Markdown note that uses ```openui blocks (openmd, or its Obsidian plugin), when building an interactive figure, explainer, animation, calculator or dashboard in a note, or when turning an HTML page or slashdocs document into a note.
 ---
 
 # Writing OpenUI notes
 
-The `intr` Obsidian plugin (repo `obsidian-openui`, local clone `~/mystuff/ai/projects/intr-obsidian`) renders each ` ```openui ` block as live UI. **All blocks in a note are one program**: names and `$state` are shared across blocks. A note holds only Markdown and ` ```openui ` blocks, never HTML. If something can't be expressed, add a generic component or function to the plugin (`src/figures.tsx`) and use it by name.
+openmd renders each ` ```openui ` block in a Markdown note as live UI: in its own live viewer (`openmd preview`) and in Obsidian through the openmd plugin. **All blocks in a note are one program**: names and `$state` are shared across blocks. A note holds only Markdown and ` ```openui ` blocks, never HTML. If something can't be expressed, add a generic component or function to `@openmd/core` (`packages/core/src/figures.tsx` in the openmd repo) and use it by name.
 
 ## Workflow
 
-Run these in the plugin repo:
+Run `openmd` with `npx openmd …`, or install it once with `npm i -g openmd`.
 
-1. `npm run reference` lists every component and function with its exact positional signature. `npm run reference -- svg` filters. Read it before writing; arguments are positional, so don't guess the order.
+1. `openmd reference` lists every component and function with its exact positional signature, and `openmd reference svg` filters. Read it before writing. Arguments are positional, so don't guess the order.
 2. Write the blocks.
-3. `npm run check-note -- "path/to/note.md"` parses the note against the real library and reports type mismatches, unknown names and names defined twice.
-4. `npm run preview -- "path/to/note.md"` serves the blocks at http://localhost:8765. Open it in a browser and try every Player, slider and button. Parsing can't show whether animations run.
-5. `npm run build`, then copy `dist/main.js`, `dist/styles.css` and `dist/manifest.json` into `<vault>/.obsidian/plugins/intr/`. Do this only if the plugin changed.
+3. `openmd check "path/to/note.md"` parses the note against the real library. It reports type mismatches, unknown names and names defined twice, and exits 1 on any problem. Fix everything it reports.
+4. `openmd preview "path/to/folder-or-note"` opens a live viewer that updates on every save. Try every Player, slider and button. Parsing can't show whether animations run.
 
 ## The language in brief
 
@@ -35,7 +34,7 @@ Run these in the plugin repo:
 | Circles render as ellipses, axes jump as data changes | Charts autoscale. Draw with `Svg` shapes instead. |
 | Need motion over time | `Player(name, $var, to, ms, label?, pauseLabel?, autoplay?, loop?, ease?)`. Without a label it is invisible, which suits a looping effect. |
 | A new library name collides | Component, function and built-in names share one namespace. For example, `Label` already exists, so SVG text is `SvgText`. |
-| A new colour or line style is needed | `paint` words are classes in `styles.extra.css` (`"ring s1"` becomes `.intr-ring .intr-s1`). Add a token there with light and dark values. |
+| A new colour or line style is needed | `paint` words are classes in `@openmd/core`'s `styles.css` (`"ring s1"` becomes `.omd-ring .omd-s1`). Add a token there with light and dark values. |
 
 ## Example
 

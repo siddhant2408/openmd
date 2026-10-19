@@ -1,9 +1,8 @@
-// Run: npm run check (bundles this with the real component library, then runs it)
+// Run: npm run check (bundles this with the real component library, then runs it, then type-checks)
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createParser } from "@openuidev/lang-core";
-import { library } from "./src/library";
-import { blockId, stitch } from "./src/stitch";
+import { blockId, library, stitch } from "@openmd/core";
 
 const parser = createParser(library.toJSONSchema());
 
@@ -17,9 +16,8 @@ for (const note of ["Sales review.md", "Q1 store review.md"]) {
   assert.ok("$month" in result.stateDeclarations, note);
 }
 
-// The figures note, the skill's example, and any notes named on the command line
-// (npm run check-note -- "path/to/note.md") must parse cleanly too.
-for (const path of ["example-vault/How GPS knows where you are.md", "skill/writing-openui-notes/SKILL.md", ...process.argv.slice(2)]) {
+// The figures note and the skill's example must parse cleanly too.
+for (const path of ["example-vault/How GPS knows where you are.md", "packages/cli/skill/writing-openui-notes/SKILL.md"]) {
   const { program, duplicates } = stitch(readFileSync(path, "utf8"));
   const result = parser.parse(program);
   assert.deepEqual(duplicates, [], `${path}: names defined in more than one block`);

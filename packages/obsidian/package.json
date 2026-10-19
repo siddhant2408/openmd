@@ -1,0 +1,17 @@
+{
+  "name": "@openmd/obsidian",
+  "version": "0.1.0",
+  "private": true,
+  "description": "openmd for Obsidian: renders ```openui blocks in notes as live UI.",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/main.tsx --bundle --format=cjs --platform=browser --target=es2022 --minify --external:obsidian --external:electron --define:process.env.NODE_ENV=\\\"production\\\" --outfile=dist/main.js && cat dist/main.css styles.css > dist/styles.css && rm dist/main.css && cp manifest.json dist/",
+    "install-vault": "npm run build && mkdir -p ../../example-vault/.obsidian/plugins/openmd && cp dist/main.js dist/styles.css dist/manifest.json ../../example-vault/.obsidian/plugins/openmd/"
+  },
+  "dependencies": {
+    "@openmd/core": "*"
+  },
+  "devDependencies": {
+    "obsidian": "^1.14.4"
+  }
+}

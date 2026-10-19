@@ -3,8 +3,8 @@ import { createRoot } from "react-dom/client";
 import { Renderer } from "@openuidev/react-lang";
 import { ThemeProvider } from "@openuidev/react-ui";
 import "@openuidev/react-ui/styles/index.css";
-import { RuntimeContext, library } from "./library";
-import { blockId, statementNames, stitch } from "./stitch";
+import { RuntimeContext, blockId, fileQueryResult, library, statementNames, stitch } from "@openmd/core";
+import "@openmd/core/styles.css";
 
 // One OpenUI renderer per note. It is never on screen itself; its Slots portal into the blocks.
 class NoteRuntime {
@@ -14,7 +14,7 @@ class NoteRuntime {
   private listeners = new Set<() => void>();
   private root = createRoot(document.createElement("div"));
 
-  constructor(private plugin: IntrPlugin) {}
+  constructor(private plugin: OpenmdPlugin) {}
 
   subscribe = (fn: () => void) => {
     this.listeners.add(fn);
@@ -49,7 +49,7 @@ class NoteRuntime {
             library={library}
             response={this.program}
             toolProvider={this.plugin.tools}
-            onError={(errors) => errors.length && console.warn("[intr]", errors)}
+            onError={(errors) => errors.length && console.warn("[openmd]", errors)}
           />
         </ThemeProvider>
       </RuntimeContext.Provider>,
@@ -61,15 +61,8 @@ class NoteRuntime {
   }
 }
 
-// ponytail: naive CSV (no quoted commas); swap for a real parser when data needs it.
-function parseCsv(text: string) {
-  const [header, ...rows] = text.trim().split(/\r?\n/).map((line) => line.split(",").map((cell) => cell.trim()));
-  return rows.map((cells) =>
-    Object.fromEntries(header.map((key, i) => [key, cells[i] !== "" && !isNaN(Number(cells[i])) ? Number(cells[i]) : cells[i]])),
-  );
-}
 
-export default class IntrPlugin extends Plugin {
+export default class OpenmdPlugin extends Plugin {
   // ponytail: one runtime per opened note, kept until the plugin unloads; evict on file close if memory matters.
   private runtimes = new Map<string, NoteRuntime>();
 
@@ -79,7 +72,7 @@ export default class IntrPlugin extends Plugin {
       const file = this.app.vault.getFileByPath(String(path));
       if (!file) throw new Error(`No file at ${path}`);
       const text = await this.app.vault.cachedRead(file);
-      return file.extension === "json" ? JSON.parse(text) : { rows: parseCsv(text) };
+      return fileQueryResult(text, file.extension);
     },
   };
 
@@ -90,10 +83,10 @@ export default class IntrPlugin extends Plugin {
       if (text) runtime.setText(text);
 
       const clashes = statementNames(source).filter((name) => runtime.duplicates.includes(name));
-      if (clashes.length) el.createDiv({ cls: "intr-warning", text: `Also defined in another block: ${clashes.join(", ")}` });
+      if (clashes.length) el.createDiv({ cls: "omd-warning", text: `Also defined in another block: ${clashes.join(", ")}` });
 
       const id = blockId(source);
-      const target = el.createDiv({ cls: "intr-block" });
+      const target = el.createDiv({ cls: "omd-block" });
       runtime.attach(id, target);
       const child = new MarkdownRenderChild(target);
       child.onunload = () => runtime.detach(id, target);

@@ -1,0 +1,18 @@
+{
+  "name": "openmd",
+  "version": "0.1.0",
+  "description": "Interactive Markdown notes for people who write with AI: a live viewer, a checker, and a guide your AI can follow.",
+  "keywords": ["markdown", "notes", "interactive", "openui", "ai", "obsidian", "viewer"],
+  "license": "MIT",
+  "bin": { "openmd": "dist/cli.cjs" },
+  "files": ["dist", "skill"],
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "build": "esbuild src/cli.ts --bundle --platform=node --format=cjs --target=node18 --minify --loader:.css=empty --banner:js=\"#!/usr/bin/env node\" --outfile=dist/cli.cjs --log-level=warning && esbuild src/viewer/app.tsx --bundle --format=esm --jsx=automatic --minify --define:process.env.NODE_ENV=\\\"production\\\" --outfile=dist/viewer.js --log-level=warning"
+  },
+  "devDependencies": {
+    "@openmd/core": "*",
+    "@types/markdown-it": "^14.1.2",
+    "markdown-it": "^14.1.0"
+  }
+}

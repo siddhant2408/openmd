@@ -9,8 +9,8 @@ type RenderNode = (node: unknown) => ReactNode;
 
 const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-// "ring s1" -> "intr-ring intr-s1". Each token is styled in styles.extra.css.
-const paint = (p?: string) => (p ?? "").split(/\s+/).filter(Boolean).map((t) => `intr-${t}`).join(" ") || undefined;
+// "ring s1" -> "omd-ring omd-s1". Each token is styled in styles.css.
+const paint = (p?: string) => (p ?? "").split(/\s+/).filter(Boolean).map((t) => `omd-${t}`).join(" ") || undefined;
 
 // Strings are text; anything else (an element, an array of them) goes through the renderer.
 const content = (value: unknown, renderNode: RenderNode): ReactNode =>
@@ -33,7 +33,7 @@ const Svg = defineComponent({
   description: "A scalable drawing. Children are Circle, Ellipse, Line, Path, Polygon, Polyline, Rect, SvgText, Group and Glyph.",
   component: ({ props, renderNode }) => (
     <InSvg.Provider value={true}>
-      <svg className="intr-svg" viewBox={props.viewBox} role="img" aria-label={props.label}>
+      <svg className="omd-svg" viewBox={props.viewBox} role="img" aria-label={props.label}>
         {renderNode(props.children)}
       </svg>
     </InSvg.Provider>
@@ -109,15 +109,15 @@ const glyphs: Record<string, { viewBox: string; body: ReactNode }> = {
     viewBox: "-32 -16 64 32",
     body: (
       <>
-        <rect className="intr-sat-panel" x="-31" y="-6" width="19" height="12" rx="1" />
-        <line className="intr-sat-line" x1="-24.7" y1="-6" x2="-24.7" y2="6" />
-        <line className="intr-sat-line" x1="-18.3" y1="-6" x2="-18.3" y2="6" />
-        <rect className="intr-sat-panel" x="12" y="-6" width="19" height="12" rx="1" />
-        <line className="intr-sat-line" x1="18.3" y1="-6" x2="18.3" y2="6" />
-        <line className="intr-sat-line" x1="24.7" y1="-6" x2="24.7" y2="6" />
-        <line className="intr-sat-line" x1="-12" y1="0" x2="12" y2="0" />
-        <rect className="intr-sat-body" x="-8" y="-9" width="16" height="18" rx="2" />
-        <path className="intr-sat-body" d="M-5 9 L5 9 L3 14 L-3 14 Z" />
+        <rect className="omd-sat-panel" x="-31" y="-6" width="19" height="12" rx="1" />
+        <line className="omd-sat-line" x1="-24.7" y1="-6" x2="-24.7" y2="6" />
+        <line className="omd-sat-line" x1="-18.3" y1="-6" x2="-18.3" y2="6" />
+        <rect className="omd-sat-panel" x="12" y="-6" width="19" height="12" rx="1" />
+        <line className="omd-sat-line" x1="18.3" y1="-6" x2="18.3" y2="6" />
+        <line className="omd-sat-line" x1="24.7" y1="-6" x2="24.7" y2="6" />
+        <line className="omd-sat-line" x1="-12" y1="0" x2="12" y2="0" />
+        <rect className="omd-sat-body" x="-8" y="-9" width="16" height="18" rx="2" />
+        <path className="omd-sat-body" d="M-5 9 L5 9 L3 14 L-3 14 Z" />
       </>
     ),
   },
@@ -126,7 +126,7 @@ const glyphs: Record<string, { viewBox: string; body: ReactNode }> = {
     body: (
       <>
         <path fill="currentColor" d="M0 0 C-4 -9 -12 -16 -12 -26 A12 12 0 1 1 12 -26 C12 -16 4 -9 0 0 Z" />
-        <circle cx="0" cy="-26" r="4.6" className="intr-glyph-hole" />
+        <circle cx="0" cy="-26" r="4.6" className="omd-glyph-hole" />
       </>
     ),
   },
@@ -134,9 +134,9 @@ const glyphs: Record<string, { viewBox: string; body: ReactNode }> = {
     viewBox: "-10 -16 20 32",
     body: (
       <>
-        <rect x="-9" y="-15" width="18" height="30" rx="3.5" className="intr-phone-case" />
-        <rect x="-6" y="-11" width="12" height="20" rx="1" className="intr-phone-screen" />
-        <circle cx="0" cy="12" r="1.3" className="intr-phone-button" />
+        <rect x="-9" y="-15" width="18" height="30" rx="3.5" className="omd-phone-case" />
+        <rect x="-6" y="-11" width="12" height="20" rx="1" className="omd-phone-screen" />
+        <circle cx="0" cy="12" r="1.3" className="omd-phone-button" />
       </>
     ),
   },
@@ -162,9 +162,9 @@ const Figure = defineComponent({
   props: z.object({ tag: z.string(), title: z.string(), children: z.array(z.any()), caption: z.string().optional() }),
   description: "A numbered figure card: tag and title above, caption (supports **bold** and *italic*) below.",
   component: ({ props, renderNode }) => (
-    <figure className="intr-fig">
-      <p className="intr-fig-title">
-        <span className="intr-fig-tag">{props.tag}</span>
+    <figure className="omd-fig">
+      <p className="omd-fig-title">
+        <span className="omd-fig-tag">{props.tag}</span>
         {props.title}
       </p>
       {renderNode(props.children)}
@@ -177,7 +177,7 @@ const Controls = defineComponent({
   name: "Controls",
   props: z.object({ children: z.array(z.any()) }),
   description: "A wrapping row of controls under a figure.",
-  component: ({ props, renderNode }) => <div className="intr-controls">{renderNode(props.children)}</div>,
+  component: ({ props, renderNode }) => <div className="omd-controls">{renderNode(props.children)}</div>,
 });
 
 const Readout = defineComponent({
@@ -185,7 +185,7 @@ const Readout = defineComponent({
   props: z.object({ text: z.string() }),
   description: "A live sentence under a figure; **bold** is highlighted.",
   component: ({ props }) => (
-    <div className="intr-readout" aria-live="polite">
+    <div className="omd-readout" aria-live="polite">
       {inline(String(props.text ?? ""))}
     </div>
   ),
@@ -196,7 +196,7 @@ const Grid = defineComponent({
   props: z.object({ children: z.array(z.any()), minWidth: z.number().optional() }),
   description: "Equal columns that wrap; each is at least minWidth pixels wide (default 160).",
   component: ({ props, renderNode }) => (
-    <div className="intr-grid" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${props.minWidth ?? 160}px, 1fr))` }}>
+    <div className="omd-grid" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${props.minWidth ?? 160}px, 1fr))` }}>
       {renderNode(props.children)}
     </div>
   ),
@@ -211,23 +211,23 @@ const Tile = defineComponent({
     const value = content(props.value, renderNode);
     if (v === "stat")
       return (
-        <div className="intr-tile intr-tile-stat">
+        <div className="omd-tile omd-tile-stat">
           <b>{value}</b>
           <span>{props.label}</span>
         </div>
       );
     if (v === "arrow")
       return (
-        <div className="intr-tile-arrow">
+        <div className="omd-tile-arrow">
           <b>{value}</b>
           {props.label}
         </div>
       );
     return (
-      <div className={`intr-tile intr-tile-${v}`}>
-        <div className="intr-tile-label">{props.label}</div>
-        <div className="intr-tile-value">{value}</div>
-        {props.sub != null ? <div className="intr-tile-sub">{content(props.sub, renderNode)}</div> : null}
+      <div className={`omd-tile omd-tile-${v}`}>
+        <div className="omd-tile-label">{props.label}</div>
+        <div className="omd-tile-value">{value}</div>
+        {props.sub != null ? <div className="omd-tile-sub">{content(props.sub, renderNode)}</div> : null}
       </div>
     );
   },
@@ -241,7 +241,7 @@ const Scrubber = defineComponent({
     const field = useStateField(props.name, props.value);
     const value = Number(field.value ?? props.min);
     return (
-      <label className="intr-grow">
+      <label className="omd-grow">
         {props.label}
         <input
           type="range"
@@ -279,7 +279,7 @@ const Btn = defineComponent({
     const trigger = useTriggerAction();
     const formName = useFormName();
     return (
-      <button type="button" className={props.variant === "primary" ? "intr-btn intr-btn-primary" : "intr-btn"} onClick={() => trigger(props.label, formName, props.action)}>
+      <button type="button" className={props.variant === "primary" ? "omd-btn omd-btn-primary" : "omd-btn"} onClick={() => trigger(props.label, formName, props.action)}>
         {props.label}
       </button>
     );
@@ -375,7 +375,7 @@ const Player = defineComponent({
     // in view. "In view" is 45% of the figure, or 45% of the screen for figures taller than it.
     useEffect(() => {
       if (!props.autoplay || !el.current || !("IntersectionObserver" in window)) return;
-      const target = el.current.closest(".intr-fig") ?? el.current;
+      const target = el.current.closest(".omd-fig") ?? el.current;
       const io = new IntersectionObserver(
         (entries) => {
           const seen = entries.some(
@@ -393,10 +393,10 @@ const Player = defineComponent({
 
     useEffect(() => () => cancelAnimationFrame(run.current.raf), []);
 
-    if (!props.label) return <span ref={el} className="intr-player-anchor" />;
+    if (!props.label) return <span ref={el} className="omd-player-anchor" />;
     const onClick = () => (running && props.pauseLabel ? stop() : start());
     return (
-      <button ref={el as never} type="button" className={props.variant === "secondary" ? "intr-btn" : "intr-btn intr-btn-primary"} onClick={onClick}>
+      <button ref={el as never} type="button" className={props.variant === "secondary" ? "omd-btn" : "omd-btn omd-btn-primary"} onClick={onClick}>
         {running && props.pauseLabel ? props.pauseLabel : props.label}
       </button>
     );
