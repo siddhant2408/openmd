@@ -36,6 +36,14 @@ npx openmd install-skill            # teach Claude Code to write these notes (~/
 
 To read and edit notes in Obsidian, install the openmd plugin (see **Try it** below).
 
+## Write notes with your AI
+
+1. **Teach your AI the format.** In Claude Code, run `npx openmd install-skill`. For ChatGPT, Claude.ai or Cursor, paste the output of `npx openmd prompt` into the chat or your rules.
+2. **Ask for what you want**, in plain words: "explain how tides work as an interactive note", "turn this CSV into a dashboard", "make a loan calculator". The skill has the AI outline the note first, start from a template, check its work with `openmd check`, and tell you what each control does.
+3. **Watch it appear.** Keep `npx openmd preview <folder>` open; the page updates every time the AI saves.
+
+Writing by hand? Copy a template from `packages/cli/skill/writing-openui-notes/templates/`: `explainer.md` (an animated figure and a chart), `dashboard.md` (data, a filter, numbers, a chart and a table) or `calculator.md` (inputs, results and a chart).
+
 ## How it works
 
 - Each block's `root` is what it shows. A block without `root` shows nothing but can define data and state for the others.
