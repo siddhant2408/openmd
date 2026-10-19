@@ -105,7 +105,7 @@ function Note({ path, text, dark }: { path: string; text: string; dark: boolean 
     location.hash = encodeURIComponent(joinPath(folderOf(path), decodeURIComponent(href.split("#")[0])));
   };
 
-  const shown = [...duplicates.map((n) => `"${n}" is defined in more than one block`), ...problems];
+  const shown = [...new Set([...duplicates.map((n) => `"${n}" is defined in more than one block`), ...problems])];
   return (
     <>
       {shown.length > 0 && (

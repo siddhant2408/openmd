@@ -56,12 +56,13 @@ For figures there is a small drawing kit:
 | Component | What it does |
 | --- | --- |
 | `Svg(viewBox, [children])` | A drawing. Children: `Circle`, `Ellipse`, `Line`, `Path`, `Polygon`, `Polyline`, `Rect`, `SvgText`, `Span`, `Group`, `Glyph("satellite" \| "pin" \| "phone", …)`. Every coordinate can be an expression; `paint` picks a style token (see `packages/core/src/styles.css`) |
+| `Plot([xMin, xMax], [yMin, yMax], [left, top, width, height], [children])` | A chart frame inside an `Svg`: its children give positions as data values, so no pixel formulas. `Polygon` and `Polyline` also accept a list of `{x, y}` |
 | `Player(name, $var, to, ms, label?, pauseLabel?, autoplay?, loop?, ease?)` | Moves `$var` towards `to` over time: Play/Pause buttons, autoplay on scroll, looping, or an eased jump (`"out"`). Invisible without a label. Gives way when anything else changes `$var` |
 | `Scrubber(name, min, max, step, $var, label?)`, `Check(name, label, $var)` | A slider and a checkbox that follow `$var` while a Player moves it |
 | `Btn(label, Action([...]), variant?)` | A plain button |
 | `Figure(tag, title, [children], caption?)`, `Controls`, `Readout`, `Grid`, `Tile` | Layout for figures; captions and readouts accept `**bold**` and `*italic*` |
 
-And functions: `@Sin`, `@Cos`, `@Sqrt`, `@Log10`, `@Pow`, `@Precision`, `@Fixed`, `@Pad`, `@Locale`, `@Join`, `@Seq`. **How GPS knows where you are** in the example vault is built from these alone. Run `openmd reference` for every signature.
+And functions: `@Intersect` (where two circles cross), `@Distance`, `@Polar`, `@Sin`, `@Cos`, `@Sqrt`, `@Log10`, `@Pow`, `@Precision`, `@Fixed`, `@Pad`, `@Locale`, `@Join`, `@Seq`. **How GPS knows where you are** in the example vault is built from these alone. Run `openmd reference` for every signature.
 
 Animations are off when the OS "reduce motion" setting is on.
 

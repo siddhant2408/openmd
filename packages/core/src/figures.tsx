@@ -27,10 +27,32 @@ const InSvg = createContext(false);
 const n = z.number();
 const look = { paint: z.string().optional(), opacity: z.number().optional(), visible: z.boolean().optional() };
 
+// Inside a Plot, shapes give positions as data values and these turn them into drawing units.
+// Outside one they pass values through unchanged.
+type Scale = { x: (v: number) => number; y: (v: number) => number } | null;
+const PlotScale = createContext<Scale>(null);
+const useScale = () => {
+  const s = useContext(PlotScale);
+  return { x: s ? s.x : (v: number) => v, y: s ? s.y : (v: number) => v, active: !!s };
+};
+type Point = { x: number; y: number };
+// "x,y x,y" or [{x, y}, …] -> "x,y x,y" in drawing units.
+const pointsAttr = (points: unknown, s: ReturnType<typeof useScale>) => {
+  if (typeof points === "string" && !s.active) return points;
+  const list: Point[] = Array.isArray(points)
+    ? points.filter((q) => q && typeof q === "object")
+    : String(points ?? "").trim().split(/\s+/).filter(Boolean).map((pair) => {
+        const [x, y] = pair.split(",").map(Number);
+        return { x, y };
+      });
+  return list.map((q) => `${round(s.x(Number(q.x)))},${round(s.y(Number(q.y)))}`).join(" ");
+};
+const round = (v: number) => Math.round(v * 100) / 100;
+
 const Svg = defineComponent({
   name: "Svg",
   props: z.object({ viewBox: z.string(), children: z.array(z.any()), label: z.string().optional() }),
-  description: "A scalable drawing. Children are Circle, Ellipse, Line, Path, Polygon, Polyline, Rect, SvgText, Group and Glyph.",
+  description: "A scalable drawing. Children are Circle, Ellipse, Line, Path, Polygon, Polyline, Rect, SvgText, Group, Glyph and Plot.",
   component: ({ props, renderNode }) => (
     <InSvg.Provider value={true}>
       <svg className="omd-svg" viewBox={props.viewBox} role="img" aria-label={props.label}>
@@ -40,44 +62,79 @@ const Svg = defineComponent({
   ),
 });
 
-const shape = <S extends z.ZodRawShape>(name: string, description: string, shapeProps: S, draw: (p: any, cls?: string) => ReactNode) =>
+const Plot = defineComponent({
+  name: "Plot",
+  props: z.object({ x: z.array(n), y: z.array(n), box: z.array(n), children: z.array(z.any()) }),
+  description:
+    "A chart frame inside an Svg. Its children give positions as data values. x is [left value, right value]; y is [bottom value, top value]; box is [left, top, width, height] in the drawing's units. Radii, SvgText dx/dy and Path stay in drawing units.",
+  component: ({ props, renderNode }) => {
+    const [x0, x1] = props.x, [y0, y1] = props.y, [left, top, width, height] = props.box;
+    const scale: Scale = {
+      x: (v) => left + ((v - x0) / (x1 - x0)) * width,
+      y: (v) => top + height - ((v - y0) / (y1 - y0)) * height,
+    };
+    return <PlotScale.Provider value={scale}>{renderNode(props.children)}</PlotScale.Provider>;
+  },
+});
+
+const shape = <S extends z.ZodRawShape>(
+  name: string,
+  description: string,
+  shapeProps: S,
+  draw: (p: any, cls: string | undefined, s: ReturnType<typeof useScale>) => ReactNode,
+) =>
   defineComponent({
     name,
     props: z.object({ ...shapeProps, ...look }),
     description,
-    component: ({ props }: { props: any }) => (props.visible === false ? null : draw(props, paint(props.paint))),
+    component: ({ props }: { props: any }) => {
+      const s = useScale();
+      return props.visible === false ? null : draw(props, paint(props.paint), s);
+    },
   });
 
-const Circle = shape("Circle", "Circle at (cx, cy). Negative radii draw as 0.", { cx: n, cy: n, r: n }, (p, cls) => (
-  <circle cx={p.cx} cy={p.cy} r={Math.max(0, p.r)} className={cls} opacity={p.opacity} />
+const Circle = shape("Circle", "Circle at (cx, cy); r is in drawing units. Negative radii draw as 0.", { cx: n, cy: n, r: n }, (p, cls, s) => (
+  <circle cx={s.x(p.cx)} cy={s.y(p.cy)} r={Math.max(0, p.r)} className={cls} opacity={p.opacity} />
 ));
-const Ellipse = shape("Ellipse", "Ellipse at (cx, cy).", { cx: n, cy: n, rx: n, ry: n }, (p, cls) => (
-  <ellipse cx={p.cx} cy={p.cy} rx={p.rx} ry={p.ry} className={cls} opacity={p.opacity} />
+const Ellipse = shape("Ellipse", "Ellipse at (cx, cy); rx and ry are in drawing units.", { cx: n, cy: n, rx: n, ry: n }, (p, cls, s) => (
+  <ellipse cx={s.x(p.cx)} cy={s.y(p.cy)} rx={p.rx} ry={p.ry} className={cls} opacity={p.opacity} />
 ));
-const Line = shape("Line", "Straight line.", { x1: n, y1: n, x2: n, y2: n }, (p, cls) => (
-  <line x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} className={cls} opacity={p.opacity} />
+const Line = shape("Line", "Straight line.", { x1: n, y1: n, x2: n, y2: n }, (p, cls, s) => (
+  <line x1={s.x(p.x1)} y1={s.y(p.y1)} x2={s.x(p.x2)} y2={s.y(p.y2)} className={cls} opacity={p.opacity} />
 ));
-const Path = shape("Path", "SVG path from a d string.", { d: z.string() }, (p, cls) => <path d={p.d} className={cls} opacity={p.opacity} />);
-const Polygon = shape("Polygon", 'Closed shape from "x,y x,y …".', { points: z.string() }, (p, cls) => (
-  <polygon points={p.points} className={cls} opacity={p.opacity} />
+const Path = shape("Path", "SVG path from a d string, always in drawing units.", { d: z.string() }, (p, cls) => <path d={p.d} className={cls} opacity={p.opacity} />);
+const Polygon = shape("Polygon", 'Closed shape through points: "x,y x,y …" or a list of {x, y}.', { points: z.any() }, (p, cls, s) => (
+  <polygon points={pointsAttr(p.points, s)} className={cls} opacity={p.opacity} />
 ));
-const Polyline = shape("Polyline", 'Open line through "x,y x,y …".', { points: z.string() }, (p, cls) => (
-  <polyline points={p.points} className={cls} opacity={p.opacity} />
+const Polyline = shape("Polyline", 'Open line through points: "x,y x,y …" or a list of {x, y}.', { points: z.any() }, (p, cls, s) => (
+  <polyline points={pointsAttr(p.points, s)} className={cls} opacity={p.opacity} />
 ));
-const Rect = shape("Rect", "Rectangle; rx rounds the corners.", { x: n, y: n, width: n, height: n, rx: n.optional() }, (p, cls) => (
-  <rect x={p.x} y={p.y} width={Math.max(0, p.width)} height={Math.max(0, p.height)} rx={p.rx} className={cls} opacity={p.opacity} />
-));
+const Rect = shape("Rect", "Rectangle from corner (x, y); rx rounds the corners.", { x: n, y: n, width: n, height: n, rx: n.optional() }, (p, cls, s) => {
+  const xa = s.x(p.x), xb = s.x(p.x + Math.max(0, p.width)), ya = s.y(p.y), yb = s.y(p.y + Math.max(0, p.height));
+  return <rect x={Math.min(xa, xb)} y={Math.min(ya, yb)} width={Math.abs(xb - xa)} height={Math.abs(yb - ya)} rx={p.rx} className={cls} opacity={p.opacity} />;
+});
 
 const SvgText = defineComponent({
   name: "SvgText",
-  props: z.object({ x: n, y: n, text: z.any(), paint: z.string().optional(), anchor: z.enum(["start", "middle", "end"]).optional(), visible: z.boolean().optional() }),
-  description: "Text in a drawing. text is a string or an array of Span.",
-  component: ({ props, renderNode }) =>
-    props.visible === false ? null : (
-      <text x={props.x} y={props.y} textAnchor={props.anchor} className={paint(props.paint)}>
+  props: z.object({
+    x: n,
+    y: n,
+    text: z.any(),
+    paint: z.string().optional(),
+    anchor: z.enum(["start", "middle", "end"]).optional(),
+    visible: z.boolean().optional(),
+    dx: n.optional(),
+    dy: n.optional(),
+  }),
+  description: "Text in a drawing. text is a string or an array of Span. dx and dy nudge it in drawing units, handy inside a Plot.",
+  component: ({ props, renderNode }) => {
+    const s = useScale();
+    return props.visible === false ? null : (
+      <text x={s.x(props.x)} y={s.y(props.y)} dx={props.dx} dy={props.dy} textAnchor={props.anchor} className={paint(props.paint)}>
         {content(props.text, renderNode)}
       </text>
-    ),
+    );
+  },
 });
 
 const Span = defineComponent({
@@ -93,14 +150,18 @@ const Span = defineComponent({
 
 const Group = defineComponent({
   name: "Group",
-  props: z.object({ children: z.array(z.any()), transform: z.string().optional(), ...look }),
-  description: "Groups shapes, optionally moved, rotated or faded together.",
-  component: ({ props, renderNode }) =>
-    props.visible === false ? null : (
-      <g transform={props.transform} opacity={props.opacity} className={paint(props.paint)}>
+  props: z.object({ children: z.array(z.any()), transform: z.string().optional(), ...look, at: z.array(n).optional() }),
+  description: "Groups shapes, optionally moved, rotated or faded together. at: [x, y] moves the group's origin to that point (a data value inside a Plot).",
+  component: ({ props, renderNode }) => {
+    const s = useScale();
+    if (props.visible === false) return null;
+    const at = props.at?.length === 2 ? `translate(${s.x(props.at[0])} ${s.y(props.at[1])}) ` : "";
+    return (
+      <g transform={(at + (props.transform ?? "")).trim() || undefined} opacity={props.opacity} className={paint(props.paint)}>
         {renderNode(props.children)}
       </g>
-    ),
+    );
+  },
 });
 
 // Small drawings placed like an <image>: x, y is the top-left corner of the box.
@@ -147,10 +208,11 @@ const Glyph = defineComponent({
   props: z.object({ name: z.enum(["satellite", "pin", "phone"]), x: n, y: n, width: n, height: n, ...look }),
   description: "A small built-in drawing (satellite, pin, phone) in the box at x, y. paint sets its colour.",
   component: ({ props }) => {
+    const s = useScale();
     const g = glyphs[props.name];
     if (!g || props.visible === false) return null;
     return (
-      <svg x={props.x} y={props.y} width={props.width} height={props.height} viewBox={g.viewBox} overflow="visible" className={paint(props.paint)} opacity={props.opacity}>
+      <svg x={s.x(props.x)} y={s.y(props.y)} width={props.width} height={props.height} viewBox={g.viewBox} overflow="visible" className={paint(props.paint)} opacity={props.opacity}>
         {g.body}
       </svg>
     );
@@ -407,7 +469,41 @@ const num = (v: unknown) => (typeof v === "number" ? v : Number(v) || 0);
 const one = (name: string, description: string, fn: (x: number) => number) =>
   defineFunction({ name, description, params: z.object({ number: z.number() }), returns: z.number(), fn: ({ number }) => fn(num(number)) });
 
+const point = z.object({ x: z.number(), y: z.number() });
+const circle = z.object({ x: z.number(), y: z.number(), r: z.number() });
+const dist = (a: Point, b: Point) => Math.hypot(num(a?.x) - num(b?.x), num(a?.y) - num(b?.y));
+
 export const functions = [
+  defineFunction({
+    name: "Intersect",
+    description: "Where two circles {x, y, r} cross: a list of 0, 1 or 2 points {x, y}. With near, the closest point comes first.",
+    params: z.object({ a: circle, b: circle, near: point.optional() }),
+    returns: z.array(point),
+    fn: ({ a, b, near }) => {
+      const [x0, y0, r0, x1, y1, r1] = [a?.x, a?.y, a?.r, b?.x, b?.y, b?.r].map(num);
+      const dx = x1 - x0, dy = y1 - y0, d = Math.hypot(dx, dy);
+      if (d === 0 || d > r0 + r1 || d < Math.abs(r0 - r1)) return [];
+      const along = (r0 * r0 - r1 * r1 + d * d) / (2 * d);
+      const h = Math.sqrt(Math.max(0, r0 * r0 - along * along));
+      const mx = x0 + (along * dx) / d, my = y0 + (along * dy) / d;
+      const pts = [{ x: mx - (h * dy) / d, y: my + (h * dx) / d }, { x: mx + (h * dy) / d, y: my - (h * dx) / d }];
+      return near ? pts.sort((p, q) => dist(p, near) - dist(q, near)) : pts;
+    },
+  }),
+  defineFunction({
+    name: "Distance",
+    description: "Straight-line distance between two points {x, y}",
+    params: z.object({ a: point, b: point }),
+    returns: z.number(),
+    fn: ({ a, b }) => dist(a, b),
+  }),
+  defineFunction({
+    name: "Polar",
+    description: "The point at distance r and angle (radians) from (x, y): {x, y}. Angles grow clockwise in a drawing, where y points down.",
+    params: z.object({ x: z.number(), y: z.number(), r: z.number(), angle: z.number() }),
+    returns: point,
+    fn: ({ x, y, r, angle }) => ({ x: num(x) + num(r) * Math.cos(num(angle)), y: num(y) + num(r) * Math.sin(num(angle)) }),
+  }),
   one("Sin", "Sine of an angle in radians", Math.sin),
   one("Cos", "Cosine of an angle in radians", Math.cos),
   one("Sqrt", "Square root", Math.sqrt),
@@ -470,4 +566,4 @@ export const functions = [
   }),
 ];
 
-export const figureComponents = [Svg, Circle, Ellipse, Line, Path, Polygon, Polyline, Rect, SvgText, Span, Group, Glyph, Figure, Controls, Readout, Grid, Tile, Scrubber, Check, Btn, Player];
+export const figureComponents = [Svg, Plot, Circle, Ellipse, Line, Path, Polygon, Polyline, Rect, SvgText, Span, Group, Glyph, Figure, Controls, Readout, Grid, Tile, Scrubber, Check, Btn, Player];
