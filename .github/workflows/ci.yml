@@ -33,7 +33,7 @@ jobs:
         run: npm run build
 
       - name: Check example notes with the built CLI
-        run: node packages/cli/dist/cli.cjs check example-vault/*.md packages/cli/skill/writing-openui-notes/SKILL.md
+        run: node packages/cli/dist/cli.cjs check example-vault/*.md packages/cli/skill/writing-openui-notes/templates/*.md
 
       - name: Audit dependencies
         run: npm audit --audit-level=high

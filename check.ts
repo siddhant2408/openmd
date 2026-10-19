@@ -16,8 +16,9 @@ for (const note of ["Sales review.md", "Q1 store review.md"]) {
   assert.ok("$month" in result.stateDeclarations, note);
 }
 
-// The figures note and the skill's example must parse cleanly too.
-for (const path of ["example-vault/How GPS knows where you are.md", "packages/cli/skill/writing-openui-notes/SKILL.md"]) {
+// The figures note and the skill's templates must parse cleanly too.
+const skill = "packages/cli/skill/writing-openui-notes";
+for (const path of ["example-vault/How GPS knows where you are.md", ...["explainer", "dashboard", "calculator"].map((t) => `${skill}/templates/${t}.md`)]) {
   const { program, duplicates } = stitch(readFileSync(path, "utf8"));
   const result = parser.parse(program);
   assert.deepEqual(duplicates, [], `${path}: names defined in more than one block`);
